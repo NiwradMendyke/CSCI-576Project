@@ -34,6 +34,9 @@ public class Editor {
         //File Chooser
         JFileChooser fc = new JFileChooser();
 
+        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        fc.setAcceptAllFileFilterUsed(false);
+
 		// Use labels to display the images
 		frame = new JFrame();
 		GridBagLayout gLayout = new GridBagLayout();
@@ -43,6 +46,7 @@ public class Editor {
         JButton loadOne = new JButton("Load Primary");
         loadOne.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                fc.setDialogTitle("Load Primary Video");
                 int ret = fc.showOpenDialog(frame);
 
                 if (ret == JFileChooser.APPROVE_OPTION) {
@@ -56,6 +60,7 @@ public class Editor {
         JButton loadTwo = new JButton("Load Secondary");
         loadTwo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                fc.setDialogTitle("Load Secondary Video");
                 int ret = fc.showOpenDialog(frame);
 
                 if (ret == JFileChooser.APPROVE_OPTION) {
