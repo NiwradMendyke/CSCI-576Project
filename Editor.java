@@ -3,20 +3,48 @@ import java.awt.*;
 import java.awt.image.*;
 import java.io.*;
 import javax.swing.*;
+import javax.swing.event.*;
 import java.util.*;
 
-public class Editor {
+public class Editor implements ChangeListener{
 
 	JFrame frame;
 	JLabel im1;
 	JLabel im2;
+    JLabel currentFrame1;
+    JLabel currentFrame2;
+    JSlider slider1; 
+    JSlider slider2;
 	BufferedImage ogImg;
 	BufferedImage scaledImg;
 	int width = 352;
 	int height = 288;
 
+    //Should set these values when video is loaded
+    //Currently initialized to 9000 for testing purposes
+    int im1Frames = 9000;
+    int im2Frames = 9000;
 
-	public void createGUI(){
+
+    public void stateChanged(ChangeEvent e) {
+        JSlider source = (JSlider)e.getSource();
+        if (!source.getValueIsAdjusting()) {
+            int newFrame = source.getValue();
+
+            if (source == slider1) {
+                currentFrame1.setText(Integer.toString(newFrame));
+            }
+            if (source == slider2) {
+                currentFrame2.setText(Integer.toString(newFrame));
+            }
+        }
+    }
+
+
+
+
+
+	public void createGUI() {
 
 		// Use labels to display the images
 		frame = new JFrame();
@@ -34,6 +62,19 @@ public class Editor {
         im2 = new JLabel("Secondary Video", SwingConstants.CENTER);
         im2.setMinimumSize(new Dimension(352, 288));
         im2.setPreferredSize(new Dimension(352, 288));
+
+        //Sliders
+        slider1 = new JSlider(JSlider.HORIZONTAL, 0, 9000, 0);
+        slider1.addChangeListener(this);
+        currentFrame1 = new JLabel();
+        currentFrame1.setText(Integer.toString(slider1.getValue()));
+        currentFrame1.setHorizontalAlignment(SwingConstants.CENTER);
+
+        slider2 = new JSlider(JSlider.HORIZONTAL, 0, 9000, 0);
+        slider2.addChangeListener(this);
+        currentFrame2 = new JLabel();
+        currentFrame2.setText(Integer.toString(slider2.getValue()));
+        currentFrame2.setHorizontalAlignment(SwingConstants.CENTER);
 
 		GridBagConstraints c = new GridBagConstraints();
 
@@ -59,6 +100,30 @@ public class Editor {
         c.gridx = 1;
         c.gridy = 1;
         frame.add(im2, c);
+
+        //Add Sliders and current frame labels
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(0, 5, 0, 5);
+        c.weighty = 1;
+        c.gridx = 0;
+        c.gridy = 2;
+        frame.add(slider1, c);
+
+        c.gridx = 1;
+        frame.add(slider2, c);
+
+        //Add current frame labels
+        c.insets = new Insets(0,0,0,0);
+        c.gridx = 0;
+        c.gridy = 3;
+        frame.add(currentFrame1, c);
+
+        c.gridx = 1;
+        frame.add(currentFrame2, c);
+
+
+
+
 
 
 
