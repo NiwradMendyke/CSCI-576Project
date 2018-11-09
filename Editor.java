@@ -1,12 +1,13 @@
 
 import java.awt.*;
 import java.awt.image.*;
+import java.awt.event.*;
 import java.io.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import java.util.*;
 
-public class Editor implements ChangeListener{
+public class Editor {
 
 	JFrame frame;
 	JLabel im1;
@@ -26,25 +27,12 @@ public class Editor implements ChangeListener{
     int im2Frames = 9000;
 
 
-    public void stateChanged(ChangeEvent e) {
-        JSlider source = (JSlider)e.getSource();
-        if (!source.getValueIsAdjusting()) {
-            int newFrame = source.getValue();
-
-            if (source == slider1) {
-                currentFrame1.setText(Integer.toString(newFrame));
-            }
-            if (source == slider2) {
-                currentFrame2.setText(Integer.toString(newFrame));
-            }
-        }
-    }
-
-
-
 
 
 	public void createGUI() {
+
+        //File Chooser
+        JFileChooser fc = new JFileChooser();
 
 		// Use labels to display the images
 		frame = new JFrame();
@@ -53,7 +41,30 @@ public class Editor implements ChangeListener{
 
         //Loading Buttons
         JButton loadOne = new JButton("Load Primary");
+        loadOne.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int ret = fc.showOpenDialog(frame);
+
+                if (ret == JFileChooser.APPROVE_OPTION) {
+                    File file = fc.getSelectedFile();
+                    //Do file things
+                    System.out.println(file.getName());
+                }
+            }
+        });
+
         JButton loadTwo = new JButton("Load Secondary");
+        loadTwo.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int ret = fc.showOpenDialog(frame);
+
+                if (ret == JFileChooser.APPROVE_OPTION) {
+                    File file = fc.getSelectedFile();
+                    //Do file things
+                    System.out.println(file.getName());
+                }
+            }
+        });
 
         //Image containers
         im1 = new JLabel("Primary Video", SwingConstants.CENTER);
@@ -65,13 +76,30 @@ public class Editor implements ChangeListener{
 
         //Sliders
         slider1 = new JSlider(JSlider.HORIZONTAL, 0, 9000, 0);
-        slider1.addChangeListener(this);
+        slider1.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                JSlider source = (JSlider)e.getSource();
+                if(!source.getValueIsAdjusting()) {
+                    currentFrame1.setText(Integer.toString(source.getValue()));
+                }
+            }
+        });
+
+        slider2 = new JSlider(JSlider.HORIZONTAL, 0, 9000, 0);
+        slider2.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                JSlider source = (JSlider)e.getSource();
+                if(!source.getValueIsAdjusting()) {
+                    currentFrame2.setText(Integer.toString(source.getValue()));
+                }
+            }
+        });
+
+        //Current frame labels
         currentFrame1 = new JLabel();
         currentFrame1.setText(Integer.toString(slider1.getValue()));
         currentFrame1.setHorizontalAlignment(SwingConstants.CENTER);
 
-        slider2 = new JSlider(JSlider.HORIZONTAL, 0, 9000, 0);
-        slider2.addChangeListener(this);
         currentFrame2 = new JLabel();
         currentFrame2.setText(Integer.toString(slider2.getValue()));
         currentFrame2.setHorizontalAlignment(SwingConstants.CENTER);
