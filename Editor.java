@@ -3,6 +3,7 @@ import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
 import java.io.*;
+import java.nio.file.Files;
 import javax.swing.*;
 import javax.swing.event.*;
 import java.util.*;
@@ -16,6 +17,8 @@ public class Editor {
     JLabel currentFrame2;
     JSlider slider1; 
     JSlider slider2;
+    File im1Dir;
+    File im2Dir;
 	BufferedImage ogImg;
 	BufferedImage scaledImg;
 	int width = 352;
@@ -28,12 +31,26 @@ public class Editor {
 
 
 
+    public Image getImageFromArray(int[] pixels, int width, int height) {
+        int[] r = Arrays.copyOfRange(pixels, 0, width*height);
+        int[] g = Arrays.copyOfRange(pixels, width*height, 2*width*height);
+        int[] b = Arrays.copyOfRange(pixels, 2*width*height, 3*width*height);
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        WritableRaster raster = (WritableRaster)  image.getData();
+        raster.setSamples(0, 0, width, height, 0, r);
+        raster.setSamples(0, 0, width, height, 1, g);
+        raster.setSamples(0, 0, width, height, 2, b);
+        image.setData(raster);
+        
+        return image;
+    }
 
 	public void createGUI() {
 
         //File Chooser
         JFileChooser fc = new JFileChooser();
 
+        //Makes file chooser select directories, delete if we want to select files
         fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fc.setAcceptAllFileFilterUsed(false);
 
@@ -50,9 +67,28 @@ public class Editor {
                 int ret = fc.showOpenDialog(frame);
 
                 if (ret == JFileChooser.APPROVE_OPTION) {
-                    File file = fc.getSelectedFile();
+                    File im1Dir = fc.getSelectedFile();
                     //Do file things
-                    System.out.println(file.getName());
+                    //1st Load first frame
+                    File f = new File(im1Dir, im1Dir.getName() + "0001.rgb");
+
+                    try {
+                        byte[] rawData = Files.readAllBytes(f.toPath());
+                        int[] pixels = new int[rawData.length];
+                        for (int i = 0; i < rawData.length; i++) {
+                            pixels[i] = Byte.toUnsignedInt(rawData[i]);
+                        }
+                        ImageIcon icon = new ImageIcon(getImageFromArray(pixels, width, height));
+                        im1.setIcon(icon);
+                    }
+                    catch (IOException exception) {
+                        System.out.println("Frame 1 does not exist for primary");
+                    }
+
+
+
+                    
+                    System.out.println(im1Dir.getName());
                 }
             }
         });
@@ -64,9 +100,25 @@ public class Editor {
                 int ret = fc.showOpenDialog(frame);
 
                 if (ret == JFileChooser.APPROVE_OPTION) {
-                    File file = fc.getSelectedFile();
+                    File im2Dir = fc.getSelectedFile();
                     //Do file things
-                    System.out.println(file.getName());
+                    //1st Load first frame
+                    File f = new File(im2Dir, im2Dir.getName() + "0001.rgb");
+
+                    try {
+                        byte[] rawData = Files.readAllBytes(f.toPath());
+                        int[] pixels = new int[rawData.length];
+                        for (int i = 0; i < rawData.length; i++) {
+                            pixels[i] = Byte.toUnsignedInt(rawData[i]);
+                        }
+                        ImageIcon icon = new ImageIcon(getImageFromArray(pixels, width, height));
+                        im1.setIcon(icon);
+                    }
+                    catch (IOException exception) {
+                        System.out.println("Frame 1 does not exist for secondary");
+                    }
+
+                    System.out.println(im2Dir.getName());
                 }
             }
         });
