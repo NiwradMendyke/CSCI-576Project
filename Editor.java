@@ -21,6 +21,8 @@ public class Editor {
     File im2Dir;
 	BufferedImage ogImg;
 	BufferedImage scaledImg;
+    boolean primaryLoaded = false;
+    boolean secondaryLoaded = false;
 	int width = 352;
 	int height = 288;
 
@@ -67,7 +69,7 @@ public class Editor {
                 int ret = fc.showOpenDialog(frame);
 
                 if (ret == JFileChooser.APPROVE_OPTION) {
-                    File im1Dir = fc.getSelectedFile();
+                    im1Dir = fc.getSelectedFile();
                     //Do file things
                     //1st Load first frame
                     File f = new File(im1Dir, im1Dir.getName() + "0001.rgb");
@@ -80,6 +82,9 @@ public class Editor {
                         }
                         ImageIcon icon = new ImageIcon(getImageFromArray(pixels, width, height));
                         im1.setIcon(icon);
+                        primaryLoaded = true;
+                        slider1.setValue(1);
+                        System.out.println("Primary Video Loaded!");
                     }
                     catch (IOException exception) {
                         System.out.println("Frame 1 does not exist for primary");
@@ -100,7 +105,7 @@ public class Editor {
                 int ret = fc.showOpenDialog(frame);
 
                 if (ret == JFileChooser.APPROVE_OPTION) {
-                    File im2Dir = fc.getSelectedFile();
+                    im2Dir = fc.getSelectedFile();
                     //Do file things
                     //1st Load first frame
                     File f = new File(im2Dir, im2Dir.getName() + "0001.rgb");
@@ -112,7 +117,10 @@ public class Editor {
                             pixels[i] = Byte.toUnsignedInt(rawData[i]);
                         }
                         ImageIcon icon = new ImageIcon(getImageFromArray(pixels, width, height));
-                        im1.setIcon(icon);
+                        im2.setIcon(icon);
+                        secondaryLoaded = true;
+                        slider2.setValue(1);
+                        System.out.println("Secondary Video Loaded!");
                     }
                     catch (IOException exception) {
                         System.out.println("Frame 1 does not exist for secondary");
@@ -132,22 +140,50 @@ public class Editor {
         im2.setPreferredSize(new Dimension(352, 288));
 
         //Sliders
-        slider1 = new JSlider(JSlider.HORIZONTAL, 0, 9000, 0);
+        slider1 = new JSlider(JSlider.HORIZONTAL, 1, 9000, 1);
         slider1.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 JSlider source = (JSlider)e.getSource();
-                if(!source.getValueIsAdjusting()) {
-                    currentFrame1.setText(Integer.toString(source.getValue()));
+                if(!source.getValueIsAdjusting() && primaryLoaded) {
+                    String newFrame = String.format("%04d", source.getValue());
+                    currentFrame1.setText(newFrame);
+                    File f = new File(im1Dir, im1Dir.getName() + newFrame + ".rgb");
+                    try {
+                        byte[] rawData = Files.readAllBytes(f.toPath());
+                        int[] pixels = new int[rawData.length];
+                        for (int i = 0; i < rawData.length; i++) {
+                            pixels[i] = Byte.toUnsignedInt(rawData[i]);
+                        }
+                        ImageIcon icon = new ImageIcon(getImageFromArray(pixels, width, height));
+                        im1.setIcon(icon);
+                    }
+                    catch (IOException exception) {
+                        System.out.println("Frame does not exist for primary");
+                    }
                 }
             }
         });
 
-        slider2 = new JSlider(JSlider.HORIZONTAL, 0, 9000, 0);
+        slider2 = new JSlider(JSlider.HORIZONTAL, 1, 9000, 1);
         slider2.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 JSlider source = (JSlider)e.getSource();
                 if(!source.getValueIsAdjusting()) {
-                    currentFrame2.setText(Integer.toString(source.getValue()));
+                    String newFrame = String.format("%04d", source.getValue());
+                    currentFrame2.setText(newFrame);
+                    File f = new File(im2Dir, im2Dir.getName() + newFrame + ".rgb");
+                    try {
+                        byte[] rawData = Files.readAllBytes(f.toPath());
+                        int[] pixels = new int[rawData.length];
+                        for (int i = 0; i < rawData.length; i++) {
+                            pixels[i] = Byte.toUnsignedInt(rawData[i]);
+                        }
+                        ImageIcon icon = new ImageIcon(getImageFromArray(pixels, width, height));
+                        im2.setIcon(icon);
+                    }
+                    catch (IOException exception) {
+                        System.out.println("Frame does not exist for secondary");
+                    }
                 }
             }
         });
