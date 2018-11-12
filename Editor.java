@@ -16,8 +16,13 @@ public class Editor {
     JLabel currentFrame2;
     JSlider slider1; 
     JSlider slider2;
+
 	BufferedImage ogImg;
 	BufferedImage scaledImg;
+
+	String primaryFile = "";
+	String secondaryFile = "";
+
 	int width = 352;
 	int height = 288;
 
@@ -28,6 +33,55 @@ public class Editor {
 
 
 
+    private BufferedImage drawRgbImg(byte[] bytes) {
+		BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+
+		int count = 0;
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				byte a = 0;
+				byte r = bytes[count];
+				byte g = bytes[count + (height * width)];
+				byte b = bytes[count + (height * width * 2)];
+
+				int pix = 0xff000000 | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff);
+				img.setRGB(x, y, pix);
+				count++;
+			}
+		}
+
+		// System.out.println("Read the .rgb image file");
+		return img;
+	}
+
+	public void showIms(String filePath, JLabel im) {
+		BufferedImage img;
+
+		try {
+			File file = new File(filePath);
+			InputStream fis = new FileInputStream(file);
+
+			long len = file.length();
+			int offset = 0;
+			int numRead = 0;
+
+			byte[] bytes = new byte[(int) len]; 
+
+			while (offset < bytes.length && (numRead = fis.read(bytes, offset, bytes.length - offset)) >= 0) {
+				offset += numRead;
+			}
+
+			img = drawRgbImg(bytes);
+			im.setIcon(new ImageIcon(img));
+			frame.revalidate();
+			frame.repaint();
+
+			fis.close();
+		}
+		catch(IOException e) {
+			System.out.println("Error: "+e);
+		}
+	}
 
 	public void createGUI() {
 
@@ -43,26 +97,40 @@ public class Editor {
         JButton loadOne = new JButton("Load Primary");
         loadOne.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                int ret = fc.showOpenDialog(frame);
+            	primaryFile = "../London/LondonOne/LondonOne";
+            	showIms(primaryFile + "0001.rgb", im1);
+            	slider1.setEnabled(true);
+                // int ret = fc.showOpenDialog(frame);
 
-                if (ret == JFileChooser.APPROVE_OPTION) {
-                    File file = fc.getSelectedFile();
-                    //Do file things
-                    System.out.println(file.getName());
-                }
+                // if (ret == JFileChooser.APPROVE_OPTION) {
+                //     String filePath = fc.getSelectedFile().getAbsolutePath();
+                    
+                //     if (filePath.substring(filePath.length() - 4).equals(".rgb")) {
+                //     	primaryFile = filePath.substring(0, filePath.length() - 8);
+                //     	showIms(primaryFile + "0001.rgb", im1);
+                //     }
+                //     System.out.println(filePath);
+                // }
             }
         });
 
         JButton loadTwo = new JButton("Load Secondary");
         loadTwo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                int ret = fc.showOpenDialog(frame);
+            	secondaryFile = "../London/LondonTwo/LondonTwo";
+            	showIms(secondaryFile + "0001.rgb", im2);
+            	slider2.setEnabled(true);
+                // int ret = fc.showOpenDialog(frame);
 
-                if (ret == JFileChooser.APPROVE_OPTION) {
-                    File file = fc.getSelectedFile();
-                    //Do file things
-                    System.out.println(file.getName());
-                }
+                // if (ret == JFileChooser.APPROVE_OPTION) {
+                //     String filePath = fc.getSelectedFile().getAbsolutePath();
+                    
+                //     if (filePath.substring(filePath.length() - 4).equals(".rgb")) {
+                //     	secondaryFile = filePath.substring(0, filePath.length() - 8);
+                //     	showIms(secondaryFile + "0001.rgb", im2);
+                //     }
+                //     System.out.println(filePath);
+                // }
             }
         });
 
@@ -75,25 +143,29 @@ public class Editor {
         im2.setPreferredSize(new Dimension(352, 288));
 
         //Sliders
-        slider1 = new JSlider(JSlider.HORIZONTAL, 0, 9000, 0);
+        slider1 = new JSlider(JSlider.HORIZONTAL, 1, 9000, 1);
         slider1.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 JSlider source = (JSlider)e.getSource();
-                if(!source.getValueIsAdjusting()) {
-                    currentFrame1.setText(Integer.toString(source.getValue()));
+                currentFrame1.setText(Integer.toString(source.getValue()));
+                if (!primaryFile.equals("")) {
+					showIms(primaryFile + String.format("%04d", source.getValue()) + ".rgb", im1);
                 }
             }
         });
+        slider1.setEnabled(false);
 
-        slider2 = new JSlider(JSlider.HORIZONTAL, 0, 9000, 0);
+        slider2 = new JSlider(JSlider.HORIZONTAL, 1, 9000, 1);
         slider2.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 JSlider source = (JSlider)e.getSource();
-                if(!source.getValueIsAdjusting()) {
-                    currentFrame2.setText(Integer.toString(source.getValue()));
+                currentFrame2.setText(Integer.toString(source.getValue()));
+                if (!secondaryFile.equals("")) {
+					showIms(secondaryFile + String.format("%04d", source.getValue()) + ".rgb", im2);
                 }
             }
         });
+        slider2.setEnabled(false);
 
         //Current frame labels
         currentFrame1 = new JLabel();
@@ -149,14 +221,6 @@ public class Editor {
         c.gridx = 1;
         frame.add(currentFrame2, c);
 
-
-
-
-
-
-
-
-
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.pack();
 		frame.setVisible(true);
@@ -165,7 +229,6 @@ public class Editor {
 	public static void main(String[] args) {
 		Editor e = new Editor();
 		e.createGUI();
-
 	}
 
 }
