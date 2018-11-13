@@ -3,6 +3,7 @@ import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
 import java.io.*;
+import java.nio.file.Files;
 import javax.swing.*;
 import javax.swing.event.*;
 import java.util.*;
@@ -17,6 +18,7 @@ public class Editor {
     JSlider slider1; 
     JSlider slider2;
 
+
 	BufferedImage ogImg;
 	BufferedImage scaledImg;
 
@@ -30,6 +32,7 @@ public class Editor {
     //Currently initialized to 9000 for testing purposes
     int im1Frames = 9000;
     int im2Frames = 9000;
+
 
 
 
@@ -83,10 +86,15 @@ public class Editor {
 		}
 	}
 
+
 	public void createGUI() {
 
         //File Chooser
         JFileChooser fc = new JFileChooser();
+
+        //Makes file chooser select directories, delete if we want to select files
+        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        fc.setAcceptAllFileFilterUsed(false);
 
 		// Use labels to display the images
 		frame = new JFrame();
@@ -97,40 +105,27 @@ public class Editor {
         JButton loadOne = new JButton("Load Primary");
         loadOne.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-            	primaryFile = "../London/LondonOne/LondonOne";
+
+              fc.setDialogTitle("Load Primary Video");
+              int ret = fc.showOpenDialog(frame);
+
+                if (ret == JFileChooser.APPROVE_OPTION) {
+                    primaryFile = fc.getSelectedFile().getAbsolutePath();
+                }
             	showIms(primaryFile + "0001.rgb", im1);
             	slider1.setEnabled(true);
-                // int ret = fc.showOpenDialog(frame);
 
-                // if (ret == JFileChooser.APPROVE_OPTION) {
-                //     String filePath = fc.getSelectedFile().getAbsolutePath();
-                    
-                //     if (filePath.substring(filePath.length() - 4).equals(".rgb")) {
-                //     	primaryFile = filePath.substring(0, filePath.length() - 8);
-                //     	showIms(primaryFile + "0001.rgb", im1);
-                //     }
-                //     System.out.println(filePath);
-                // }
             }
         });
 
         JButton loadTwo = new JButton("Load Secondary");
         loadTwo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+              
             	secondaryFile = "../London/LondonTwo/LondonTwo";
             	showIms(secondaryFile + "0001.rgb", im2);
             	slider2.setEnabled(true);
-                // int ret = fc.showOpenDialog(frame);
 
-                // if (ret == JFileChooser.APPROVE_OPTION) {
-                //     String filePath = fc.getSelectedFile().getAbsolutePath();
-                    
-                //     if (filePath.substring(filePath.length() - 4).equals(".rgb")) {
-                //     	secondaryFile = filePath.substring(0, filePath.length() - 8);
-                //     	showIms(secondaryFile + "0001.rgb", im2);
-                //     }
-                //     System.out.println(filePath);
-                // }
             }
         });
 
@@ -147,9 +142,11 @@ public class Editor {
         slider1.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 JSlider source = (JSlider)e.getSource();
+
                 currentFrame1.setText(Integer.toString(source.getValue()));
                 if (!primaryFile.equals("")) {
 					showIms(primaryFile + String.format("%04d", source.getValue()) + ".rgb", im1);
+
                 }
             }
         });
@@ -159,9 +156,11 @@ public class Editor {
         slider2.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 JSlider source = (JSlider)e.getSource();
+
                 currentFrame2.setText(Integer.toString(source.getValue()));
                 if (!secondaryFile.equals("")) {
 					showIms(secondaryFile + String.format("%04d", source.getValue()) + ".rgb", im2);
+
                 }
             }
         });
