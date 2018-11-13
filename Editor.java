@@ -22,8 +22,8 @@ public class Editor {
 	BufferedImage ogImg;
 	BufferedImage scaledImg;
 
-	String primaryFile = "";
-	String secondaryFile = "";
+	File primaryFile;
+	File secondaryFile;
 
 	int width = 352;
 	int height = 288;
@@ -106,13 +106,13 @@ public class Editor {
         loadOne.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
 
-              fc.setDialogTitle("Load Primary Video");
-              int ret = fc.showOpenDialog(frame);
-
+                fc.setDialogTitle("Load Primary Video");
+                int ret = fc.showOpenDialog(frame);
                 if (ret == JFileChooser.APPROVE_OPTION) {
-                    primaryFile = fc.getSelectedFile().getAbsolutePath();
+                    primaryFile = fc.getSelectedFile();
                 }
-            	showIms(primaryFile + "0001.rgb", im1);
+                File f = new File(primaryFile, primaryFile.getName() + "0001.rgb");
+            	showIms(f.getAbsolutePath(), im1);
             	slider1.setEnabled(true);
 
             }
@@ -121,9 +121,14 @@ public class Editor {
         JButton loadTwo = new JButton("Load Secondary");
         loadTwo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-              
-            	secondaryFile = "../London/LondonTwo/LondonTwo";
-            	showIms(secondaryFile + "0001.rgb", im2);
+
+                fc.setDialogTitle("Load Secondary Video");
+                int ret = fc.showOpenDialog(frame);
+                if (ret == JFileChooser.APPROVE_OPTION) {
+                    secondaryFile = fc.getSelectedFile();
+                }
+                File f = new File(secondaryFile, secondaryFile.getName() + "0001.rgb");
+            	showIms(f.getAbsolutePath(), im2);
             	slider2.setEnabled(true);
 
             }
@@ -142,12 +147,11 @@ public class Editor {
         slider1.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 JSlider source = (JSlider)e.getSource();
-
                 currentFrame1.setText(Integer.toString(source.getValue()));
-                if (!primaryFile.equals("")) {
-					showIms(primaryFile + String.format("%04d", source.getValue()) + ".rgb", im1);
+                String newFrame = String.format("%04d", source.getValue()) + ".rgb";
+                File f = new File(primaryFile, primaryFile.getName() + newFrame);
+                showIms(f.getAbsolutePath(), im1);
 
-                }
             }
         });
         slider1.setEnabled(false);
@@ -158,10 +162,10 @@ public class Editor {
                 JSlider source = (JSlider)e.getSource();
 
                 currentFrame2.setText(Integer.toString(source.getValue()));
-                if (!secondaryFile.equals("")) {
-					showIms(secondaryFile + String.format("%04d", source.getValue()) + ".rgb", im2);
+                String newFrame = String.format("%04d", source.getValue()) + ".rgb";
+                File f = new File(secondaryFile, secondaryFile.getName() + newFrame);
+                showIms(f.getAbsolutePath(), im2);
 
-                }
             }
         });
         slider2.setEnabled(false);
