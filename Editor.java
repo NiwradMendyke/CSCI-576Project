@@ -17,12 +17,14 @@ public class Editor {
     JLabel currentFrame2;
     JSlider slider1; 
     JSlider slider2;
-    File im1Dir;
-    File im2Dir;
+
+
 	BufferedImage ogImg;
 	BufferedImage scaledImg;
-    boolean primaryLoaded = false;
-    boolean secondaryLoaded = false;
+
+	String primaryFile = "";
+	String secondaryFile = "";
+
 	int width = 352;
 	int height = 288;
 
@@ -33,19 +35,57 @@ public class Editor {
 
 
 
-    public Image getImageFromArray(int[] pixels, int width, int height) {
-        int[] r = Arrays.copyOfRange(pixels, 0, width*height);
-        int[] g = Arrays.copyOfRange(pixels, width*height, 2*width*height);
-        int[] b = Arrays.copyOfRange(pixels, 2*width*height, 3*width*height);
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        WritableRaster raster = (WritableRaster)  image.getData();
-        raster.setSamples(0, 0, width, height, 0, r);
-        raster.setSamples(0, 0, width, height, 1, g);
-        raster.setSamples(0, 0, width, height, 2, b);
-        image.setData(raster);
-        
-        return image;
-    }
+
+    private BufferedImage drawRgbImg(byte[] bytes) {
+		BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+
+		int count = 0;
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				byte a = 0;
+				byte r = bytes[count];
+				byte g = bytes[count + (height * width)];
+				byte b = bytes[count + (height * width * 2)];
+
+				int pix = 0xff000000 | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff);
+				img.setRGB(x, y, pix);
+				count++;
+			}
+		}
+
+		// System.out.println("Read the .rgb image file");
+		return img;
+	}
+
+	public void showIms(String filePath, JLabel im) {
+		BufferedImage img;
+
+		try {
+			File file = new File(filePath);
+			InputStream fis = new FileInputStream(file);
+
+			long len = file.length();
+			int offset = 0;
+			int numRead = 0;
+
+			byte[] bytes = new byte[(int) len]; 
+
+			while (offset < bytes.length && (numRead = fis.read(bytes, offset, bytes.length - offset)) >= 0) {
+				offset += numRead;
+			}
+
+			img = drawRgbImg(bytes);
+			im.setIcon(new ImageIcon(img));
+			frame.revalidate();
+			frame.repaint();
+
+			fis.close();
+		}
+		catch(IOException e) {
+			System.out.println("Error: "+e);
+		}
+	}
+
 
 	public void createGUI() {
 
@@ -65,69 +105,27 @@ public class Editor {
         JButton loadOne = new JButton("Load Primary");
         loadOne.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                fc.setDialogTitle("Load Primary Video");
-                int ret = fc.showOpenDialog(frame);
+
+              fc.setDialogTitle("Load Primary Video");
+              int ret = fc.showOpenDialog(frame);
 
                 if (ret == JFileChooser.APPROVE_OPTION) {
-                    im1Dir = fc.getSelectedFile();
-                    //Do file things
-                    //1st Load first frame
-                    File f = new File(im1Dir, im1Dir.getName() + "0001.rgb");
-
-                    try {
-                        byte[] rawData = Files.readAllBytes(f.toPath());
-                        int[] pixels = new int[rawData.length];
-                        for (int i = 0; i < rawData.length; i++) {
-                            pixels[i] = Byte.toUnsignedInt(rawData[i]);
-                        }
-                        ImageIcon icon = new ImageIcon(getImageFromArray(pixels, width, height));
-                        im1.setIcon(icon);
-                        primaryLoaded = true;
-                        slider1.setValue(1);
-                        System.out.println("Primary Video Loaded!");
-                    }
-                    catch (IOException exception) {
-                        System.out.println("Frame 1 does not exist for primary");
-                    }
-
-
-
-                    
-                    System.out.println(im1Dir.getName());
+                    primaryFile = fc.getSelectedFile().getAbsolutePath();
                 }
+            	showIms(primaryFile + "0001.rgb", im1);
+            	slider1.setEnabled(true);
+
             }
         });
 
         JButton loadTwo = new JButton("Load Secondary");
         loadTwo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                fc.setDialogTitle("Load Secondary Video");
-                int ret = fc.showOpenDialog(frame);
+              
+            	secondaryFile = "../London/LondonTwo/LondonTwo";
+            	showIms(secondaryFile + "0001.rgb", im2);
+            	slider2.setEnabled(true);
 
-                if (ret == JFileChooser.APPROVE_OPTION) {
-                    im2Dir = fc.getSelectedFile();
-                    //Do file things
-                    //1st Load first frame
-                    File f = new File(im2Dir, im2Dir.getName() + "0001.rgb");
-
-                    try {
-                        byte[] rawData = Files.readAllBytes(f.toPath());
-                        int[] pixels = new int[rawData.length];
-                        for (int i = 0; i < rawData.length; i++) {
-                            pixels[i] = Byte.toUnsignedInt(rawData[i]);
-                        }
-                        ImageIcon icon = new ImageIcon(getImageFromArray(pixels, width, height));
-                        im2.setIcon(icon);
-                        secondaryLoaded = true;
-                        slider2.setValue(1);
-                        System.out.println("Secondary Video Loaded!");
-                    }
-                    catch (IOException exception) {
-                        System.out.println("Frame 1 does not exist for secondary");
-                    }
-
-                    System.out.println(im2Dir.getName());
-                }
             }
         });
 
@@ -144,49 +142,29 @@ public class Editor {
         slider1.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 JSlider source = (JSlider)e.getSource();
-                if(!source.getValueIsAdjusting() && primaryLoaded) {
-                    String newFrame = String.format("%04d", source.getValue());
-                    currentFrame1.setText(newFrame);
-                    File f = new File(im1Dir, im1Dir.getName() + newFrame + ".rgb");
-                    try {
-                        byte[] rawData = Files.readAllBytes(f.toPath());
-                        int[] pixels = new int[rawData.length];
-                        for (int i = 0; i < rawData.length; i++) {
-                            pixels[i] = Byte.toUnsignedInt(rawData[i]);
-                        }
-                        ImageIcon icon = new ImageIcon(getImageFromArray(pixels, width, height));
-                        im1.setIcon(icon);
-                    }
-                    catch (IOException exception) {
-                        System.out.println("Frame does not exist for primary");
-                    }
+
+                currentFrame1.setText(Integer.toString(source.getValue()));
+                if (!primaryFile.equals("")) {
+					showIms(primaryFile + String.format("%04d", source.getValue()) + ".rgb", im1);
+
                 }
             }
         });
+        slider1.setEnabled(false);
 
         slider2 = new JSlider(JSlider.HORIZONTAL, 1, 9000, 1);
         slider2.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
                 JSlider source = (JSlider)e.getSource();
-                if(!source.getValueIsAdjusting()) {
-                    String newFrame = String.format("%04d", source.getValue());
-                    currentFrame2.setText(newFrame);
-                    File f = new File(im2Dir, im2Dir.getName() + newFrame + ".rgb");
-                    try {
-                        byte[] rawData = Files.readAllBytes(f.toPath());
-                        int[] pixels = new int[rawData.length];
-                        for (int i = 0; i < rawData.length; i++) {
-                            pixels[i] = Byte.toUnsignedInt(rawData[i]);
-                        }
-                        ImageIcon icon = new ImageIcon(getImageFromArray(pixels, width, height));
-                        im2.setIcon(icon);
-                    }
-                    catch (IOException exception) {
-                        System.out.println("Frame does not exist for secondary");
-                    }
+
+                currentFrame2.setText(Integer.toString(source.getValue()));
+                if (!secondaryFile.equals("")) {
+					showIms(secondaryFile + String.format("%04d", source.getValue()) + ".rgb", im2);
+
                 }
             }
         });
+        slider2.setEnabled(false);
 
         //Current frame labels
         currentFrame1 = new JLabel();
@@ -242,14 +220,6 @@ public class Editor {
         c.gridx = 1;
         frame.add(currentFrame2, c);
 
-
-
-
-
-
-
-
-
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.pack();
 		frame.setVisible(true);
@@ -258,7 +228,6 @@ public class Editor {
 	public static void main(String[] args) {
 		Editor e = new Editor();
 		e.createGUI();
-
 	}
 
 }
