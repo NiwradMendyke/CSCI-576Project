@@ -1,3 +1,4 @@
+package finalproject;
 
 import java.awt.*;
 import java.awt.image.*;
@@ -6,18 +7,19 @@ import java.io.*;
 import java.nio.file.Files;
 import javax.swing.*;
 import javax.swing.event.*;
+import javax.swing.border.Border;
 import java.util.*;
+
+// import DrawableLabel;
 
 public class Editor {
 
 	JFrame frame;
-	JLabel im1;
+	DrawableLabel im1;
 	JLabel im2;
-    JLabel currentFrame1;
-    JLabel currentFrame2;
-    JSlider slider1; 
-    JSlider slider2;
-
+    JLabel currentFrame1, currentFrame2;
+    JSlider slider1, slider2;
+    JList<String> linkList;
 
 	BufferedImage ogImg;
 	BufferedImage scaledImg;
@@ -32,8 +34,6 @@ public class Editor {
     //Currently initialized to 9000 for testing purposes
     int im1Frames = 9000;
     int im2Frames = 9000;
-
-
 
 
     private BufferedImage drawRgbImg(byte[] bytes) {
@@ -92,6 +92,8 @@ public class Editor {
         //File Chooser
         JFileChooser fc = new JFileChooser();
 
+        JButton loadOne, loadTwo, newHyperlink, connectVideo, save;
+
         //Makes file chooser select directories, delete if we want to select files
         fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fc.setAcceptAllFileFilterUsed(false);
@@ -102,7 +104,8 @@ public class Editor {
 		frame.getContentPane().setLayout(gLayout);
 
         //Loading Buttons
-        JButton loadOne = new JButton("Load Primary");
+        loadOne = new JButton("Load Primary");
+        loadOne.setHorizontalAlignment(SwingConstants.CENTER);
         loadOne.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
 
@@ -118,7 +121,8 @@ public class Editor {
             }
         });
 
-        JButton loadTwo = new JButton("Load Secondary");
+        loadTwo = new JButton("Load Secondary");
+        loadTwo.setHorizontalAlignment(SwingConstants.CENTER);
         loadTwo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
 
@@ -134,13 +138,25 @@ public class Editor {
             }
         });
 
+        newHyperlink = new JButton("Create New Hyperlink");
+        newHyperlink.setHorizontalAlignment(SwingConstants.CENTER);
+
+        connectVideo = new JButton("Connect Video");
+        connectVideo.setHorizontalAlignment(SwingConstants.CENTER);
+
+        save = new JButton("Save File");
+        save.setHorizontalAlignment(SwingConstants.CENTER);
+
         //Image containers
-        im1 = new JLabel("Primary Video", SwingConstants.CENTER);
+        im1 = new DrawableLabel("Primary Video", SwingConstants.CENTER);
         im1.setMinimumSize(new Dimension(352, 288));
         im1.setPreferredSize(new Dimension(352, 288));
         im2 = new JLabel("Secondary Video", SwingConstants.CENTER);
         im2.setMinimumSize(new Dimension(352, 288));
         im2.setPreferredSize(new Dimension(352, 288));
+
+        String[] s = {"one", "two", "three", "four", "five"};
+        linkList = new JList<String>(s);
 
         //Sliders
         slider1 = new JSlider(JSlider.HORIZONTAL, 1, 9000, 1);
@@ -182,37 +198,47 @@ public class Editor {
 		GridBagConstraints c = new GridBagConstraints();
 
         //Add Buttons
-		c.anchor = GridBagConstraints.CENTER;
+		// c.anchor = GridBagConstraints.CENTER;
 		c.weightx = 1;
         c.weighty = 1;
 		c.gridx = 0;
         c.gridy = 0;
 		frame.add(loadOne, c);
 
-        c.gridx = 1;
-        c.gridy = 0;
+		c.gridx = 1;
         frame.add(loadTwo, c);
 
-        //Add Image containers
-        c.weighty = 1;
-        c.gridx = 0;
+		c.gridx = 2;
+        frame.add(newHyperlink, c);
+
+        c.gridx = 3;
+        frame.add(connectVideo, c);
+
+        c.gridx = 4;
+        frame.add(save, c);
+
+        //Add list of hyperlinks
         c.gridy = 1;
+        c.gridx = 2;
+        frame.add(linkList, c);
+
+        //Add Image containers
+        c.gridheight = 1;
+        c.gridwidth = 2;
+        c.gridx = 0;
         frame.add(im1, c);
 
-        c.weighty = 1;
-        c.gridx = 1;
-        c.gridy = 1;
+        c.gridx = 3;
         frame.add(im2, c);
 
         //Add Sliders and current frame labels
         c.fill = GridBagConstraints.HORIZONTAL;
         c.insets = new Insets(0, 5, 0, 5);
-        c.weighty = 1;
         c.gridx = 0;
         c.gridy = 2;
         frame.add(slider1, c);
 
-        c.gridx = 1;
+        c.gridx = 3;
         frame.add(slider2, c);
 
         //Add current frame labels
@@ -221,7 +247,7 @@ public class Editor {
         c.gridy = 3;
         frame.add(currentFrame1, c);
 
-        c.gridx = 1;
+        c.gridx = 3;
         frame.add(currentFrame2, c);
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -233,5 +259,4 @@ public class Editor {
 		Editor e = new Editor();
 		e.createGUI();
 	}
-
 }
