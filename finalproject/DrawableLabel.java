@@ -16,6 +16,6 @@ public class DrawableLabel extends JLabel {
 
 	@Override
     protected void paintComponent(Graphics g) {
-
+    	super.paintComponent(g);
     }
 }
