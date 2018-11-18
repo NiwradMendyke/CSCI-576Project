@@ -10,11 +10,12 @@ import java.util.*;
 
 public class DrawableLabel extends JLabel implements MouseListener, MouseMotionListener {
 
-	ArrayList<Hyperlink> links; // reference to master list of hyperlinks in Editor.java
+	HashMap<String, Hyperlink> links; // reference to master list of hyperlinks in Editor.java
 	Hyperlink newLink; // temporary reference to new hyperlink 
+	String currLink;
 
 	int currFrame = 1; // current frame being displayed
-	ArrayList<Rectangle> currRects; // list of hyperlink boxes in the current frame
+	HashMap<Rectangle, String> currRects; // list of hyperlink boxes in the current frame
 
 	Rectangle rect; 
 
@@ -24,19 +25,18 @@ public class DrawableLabel extends JLabel implements MouseListener, MouseMotionL
 	int drawMode = 0; // represents which state the drawable label is in
 	// 0 is no drawing, 1 is draw start frame, 2 is draw end frame, 3 is modify link box
 
-	int x, y;
-
 	JFrame parentFrame;
 	JLabel helpText;
 
-	public DrawableLabel(JFrame parent, JLabel help, ArrayList<Hyperlink> hyperlinks, String name, int orientation) {
+
+	public DrawableLabel(JFrame parent, JLabel help, HashMap<String, Hyperlink> hyperlinks, String name, int orientation) {
 		super(name, orientation);
 
 		parentFrame = parent;
 		helpText = help;
 
 		links = hyperlinks;
-		currRects = new ArrayList<Rectangle>();
+		currRects = new HashMap<Rectangle, String>();
 
 		addMouseListener(this);
     	addMouseMotionListener(this);
@@ -46,9 +46,7 @@ public class DrawableLabel extends JLabel implements MouseListener, MouseMotionL
 		currFrame = newFrame;
 		currRects.clear();
 		
-		for (Hyperlink link : links) { // gets all hyperlink boxes for current frame
-			link.getFrames(currFrame, currRects);
-		}
+		links.forEach((name, link) -> link.getFrames(currFrame, currRects));
 
 		if (drawMode == 2) {
 			newLink.getFrames(currFrame, currRects);
@@ -61,9 +59,10 @@ public class DrawableLabel extends JLabel implements MouseListener, MouseMotionL
 		}
 	}
 
-	public void createNewLink(String name) { // called by Editor.java to start process for new hyperlink
-		newLink = new Hyperlink(name);
+	public void createNewLink(String name, Color color) { // called by Editor.java to start process for new hyperlink
+		newLink = new Hyperlink(name, color);
 		drawMode = 1;
+		currLink = name;
 		helpText.setText("Draw start frame");
 	}
 
@@ -87,13 +86,14 @@ public class DrawableLabel extends JLabel implements MouseListener, MouseMotionL
 			}
 		}
 		if (drawMode == 3) {
-			for (Rectangle r : currRects) {
-	 			if (setCorner(r, e.getPoint()) || r.contains(e.getPoint())) {
-	 				rect = r;
-	 				mouseClick = e.getPoint();
-	 				return;
-	 			}
-	 		}
+			currRects.forEach((r, name) -> {
+				if (setCorner(r, e.getPoint()) || r.contains(e.getPoint())) {
+					rect = r;
+					currLink = name;
+					mouseClick = e.getPoint();
+					return;
+				}
+			});
 		}
 	}
 
@@ -106,12 +106,13 @@ public class DrawableLabel extends JLabel implements MouseListener, MouseMotionL
 		}
 		if (drawMode == 2 && rect != null) {
 			newLink.addKeyframe(currFrame, rect);
-			links.add(newLink);
+			links.put(newLink.getName(), newLink);
 			rect = null;
 			drawMode = 0;
 			helpText.setText("");
 		}
 		if (drawMode == 3) {
+			links.get(currLink).addKeyframe(currFrame, rect);
 			rect = null;
 		}
 	}
@@ -193,17 +194,24 @@ public class DrawableLabel extends JLabel implements MouseListener, MouseMotionL
 	}
 
 	@Override
-    protected void paintComponent(Graphics g) {
+   protected void paintComponent(Graphics g) {
     	super.paintComponent(g);
-    	g.setColor(Color.magenta);
+    	// g.setColor(Color.magenta);
     
     	if (rect != null) {
-    		g.drawRect((int)rect.getX(), (int)rect.getY(), (int)rect.getWidth(), (int)rect.getHeight());
+    		currRects.put(rect, currLink);
     	}
 
- 		for (Rectangle r : currRects) {
+ 		currRects.forEach((r, name) -> {
+ 			if (newLink != null && name.equals(newLink.getName())) {
+ 				g.setColor(newLink.getColor());
+ 			}
+ 			else {
+ 				g.setColor(links.get(name).getColor());
+ 			}
+
  			g.drawRect((int)r.getX(), (int)r.getY(), (int)r.getWidth(), (int)r.getHeight());
- 		}
+ 		});
    }
 }
 

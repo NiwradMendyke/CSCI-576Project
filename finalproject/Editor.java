@@ -14,7 +14,7 @@ import java.util.*;
 
 public class Editor {
 
-    ArrayList<Hyperlink> links; // master list of hyperlinks for a loaded primary video, might be replaced later
+    HashMap<String, Hyperlink> links; // master list of hyperlinks for a loaded primary video, might be replaced later
 
 	JFrame frame;
 	DrawableLabel im1;
@@ -31,6 +31,9 @@ public class Editor {
 
 	int width = 352;
 	int height = 288;
+
+    Color[] colors = {Color.magenta, Color.red, Color.pink, Color.cyan, Color.yellow, Color.green};
+    int colorIndex = 0;
 
     //Should set these values when video is loaded
     //Currently initialized to 9000 for testing purposes
@@ -91,7 +94,7 @@ public class Editor {
 
 	public void createGUI() {
 
-        links = new ArrayList<Hyperlink>();
+        links = new HashMap<String, Hyperlink>();
 
         //File Chooser
         JFileChooser fc = new JFileChooser();
@@ -119,6 +122,9 @@ public class Editor {
                 // if (ret == JFileChooser.APPROVE_OPTION) {
                 //     primaryFile = fc.getSelectedFile();
                 // }
+                // if (primaryFile == null) {
+                //     return;
+                // }
                 primaryFile = new File("../London/LondonOne"); // temporarily hard-coding a value for this
 
                 File f = new File(primaryFile, primaryFile.getName() + "0001.rgb");
@@ -138,6 +144,9 @@ public class Editor {
                 if (ret == JFileChooser.APPROVE_OPTION) {
                     secondaryFile = fc.getSelectedFile();
                 }
+                if (secondaryFile == null) {
+                    return;
+                }
                 File f = new File(secondaryFile, secondaryFile.getName() + "0001.rgb");
             	showIms(f.getAbsolutePath(), im2);
             	slider2.setEnabled(true);
@@ -155,7 +164,8 @@ public class Editor {
                     return;
                 }
                 String newLinkName = JOptionPane.showInputDialog(frame, "Please enter a name for the new link");                
-                im1.createNewLink(newLinkName);
+                im1.createNewLink(newLinkName, colors[colorIndex]);
+                colorIndex = (colorIndex + 1) % colors.length;
             }
         });
 
@@ -274,7 +284,7 @@ public class Editor {
 
         c.gridwidth = 1;
         c.gridx = 2;
-        c.gridy = 3;
+        c.gridy = 2;
         frame.add(helperText, c);
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
