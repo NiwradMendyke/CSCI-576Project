@@ -50,7 +50,7 @@ public class Hyperlink {
 
 	public void getFrames(int frame, HashMap<Rectangle, String> currRects) { // fills an arraylist with link boxes for current frame
 		if (frame >= start && frame <= (start + length)) {
-			// System.out.println(frames.get(frame - start).toString());
+			//System.out.println(frames.get(frame - start).toString());
 			currRects.put(frames.get(frame - start), linkName);
 		}
 	}
@@ -58,13 +58,51 @@ public class Hyperlink {
 	private void generateFrames() { // called whenever a keyframe is added, uses those keyframes to generate a list of frames
 		System.out.println("Generating frames from " + keyframes.size() + " keyframes");
 		frames.clear();
-		Rectangle prev = keyframes.get(start);
-		for (int i = 0; i <= length; i++) {
-			if (keyframes.get(start + i) != null) {
-				prev = keyframes.get(start + i);
-			}
-			frames.add(new Rectangle(prev));
-		}
+        Rectangle prev = keyframes.get(start);
+        
+        int i = 0;
+        while (i <= length) {
+            int j = i+1;
+            //Find next keyframe
+            //if doesn't exist, then break loop
+            while (keyframes.get(start + j) == null && j <= length) {
+                j += 1;
+            }
+            if (j > length) {
+                break;
+            }
+            
+            //if we didn't break, then we got some work to do
+            Rectangle next = keyframes.get(start + j);
+            double x_mod = (next.getX() - prev.getX()) / (j-i);
+            double y_mod = (next.getY() - prev.getY()) / (j-i);
+            double width_mod = (next.getWidth() - prev.getWidth()) / (j-i);
+            double height_mod = (next.getHeight() - prev.getHeight()) / (j-i);
+            
+
+            int k = 0;
+            while (i+k != j+1) {
+                int x = (int) Math.round(prev.getX() + x_mod*k);
+                int y = (int) Math.round(prev.getY() + y_mod*k);
+                int width = (int) Math.round(prev.getWidth() + width_mod*k);
+                int height = (int) Math.round(prev.getHeight() + height_mod*k);
+                frames.add(new Rectangle(x, y, width, height));
+                k+=1;
+                }
+            i = j;
+            prev = next;
+        }
+        
+        /*
+        for (int i = 0; i <= length; i++) {
+            if (keyframes.get(start + i) != null) {
+                prev =  keyframes.get(start + i);
+            }
+            frames.add(new Rectangle(prev));
+        }
+        */
+		System.out.println("Interpolated Rectangles");
+
 	}
 }
 

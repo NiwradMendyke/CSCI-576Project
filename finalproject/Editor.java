@@ -117,15 +117,17 @@ public class Editor {
         loadOne.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
 
-                // fc.setDialogTitle("Load Primary Video");
-                // int ret = fc.showOpenDialog(frame);
-                // if (ret == JFileChooser.APPROVE_OPTION) {
-                //     primaryFile = fc.getSelectedFile();
-                // }
-                // if (primaryFile == null) {
-                //     return;
-                // }
-                primaryFile = new File("../London/LondonOne"); // temporarily hard-coding a value for this
+                /*
+                 fc.setDialogTitle("Load Primary Video");
+                 int ret = fc.showOpenDialog(frame);
+                 if (ret == JFileChooser.APPROVE_OPTION) {
+                     primaryFile = fc.getSelectedFile();
+                 }
+                 if (primaryFile == null) {
+                     return;
+                 }
+                 */
+                primaryFile = new File("../London/LondonOne");
 
                 File f = new File(primaryFile, primaryFile.getName() + "0001.rgb");
             	showIms(f.getAbsolutePath(), im1);
