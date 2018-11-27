@@ -59,7 +59,7 @@ public class Hyperlink {
 		System.out.println("Generating frames from " + keyframes.size() + " keyframes");
 		frames.clear();
         Rectangle prev = keyframes.get(start);
-        /*
+        
         int i = 0;
         while (i <= length) {
             int j = i+1;
@@ -74,10 +74,11 @@ public class Hyperlink {
             
             //if we didn't break, then we got some work to do
             Rectangle next = keyframes.get(start + j);
-            double x_mod = (next.getX() - prev.getX()) / j-i;
-            double y_mod = (next.getY() - prev.getY()) / j-i;
-            double width_mod = (next.getWidth() - prev.getWidth()) / j-i;
-            double height_mod = (next.getHeight() - prev.getHeight()) / j-i;
+            double x_mod = (next.getX() - prev.getX()) / (j-i);
+            double y_mod = (next.getY() - prev.getY()) / (j-i);
+            double width_mod = (next.getWidth() - prev.getWidth()) / (j-i);
+            double height_mod = (next.getHeight() - prev.getHeight()) / (j-i);
+            
 
             int k = 0;
             while (i+k != j+1) {
@@ -91,14 +92,16 @@ public class Hyperlink {
             i = j;
             prev = next;
         }
-        */
+        
+        /*
         for (int i = 0; i <= length; i++) {
             if (keyframes.get(start + i) != null) {
                 prev =  keyframes.get(start + i);
             }
             frames.add(new Rectangle(prev));
         }
-		System.out.println("We made it");
+        */
+		System.out.println("Interpolated Rectangles");
 
 	}
 }
