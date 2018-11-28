@@ -22,6 +22,7 @@ public class Editor {
     JLabel currentFrame1, currentFrame2;
     JSlider slider1, slider2;
     JList<String> linkList;
+    DefaultListModel<String> linkListModel;
 
 	BufferedImage ogImg;
 	BufferedImage scaledImg;
@@ -62,11 +63,15 @@ public class Editor {
 		return img;
 	}
 
-	public void showIms(String filePath, JLabel im) {
+	public void showIms(File videoFolder, int num, JLabel im, JLabel frameNum) {
+        frameNum.setText(Integer.toString(num));
+        String newFrame = String.format("%04d", num) + ".rgb";
+        File f = new File(videoFolder, videoFolder.getName() + newFrame);
+
 		BufferedImage img;
 
 		try {
-			File file = new File(filePath);
+			File file = new File(f.getAbsolutePath());
 			InputStream fis = new FileInputStream(file);
 
 			long len = file.length();
@@ -100,7 +105,7 @@ public class Editor {
         JFileChooser fc = new JFileChooser();
 
         JButton loadOne, loadTwo, newHyperlink, connectVideo, save;
-        JLabel helperText;
+        JLabel listTitle, helperText;
 
         //Makes file chooser select directories, delete if we want to select files
         fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -129,8 +134,7 @@ public class Editor {
                  */
                 primaryFile = new File("../London/LondonOne");
 
-                File f = new File(primaryFile, primaryFile.getName() + "0001.rgb");
-            	showIms(f.getAbsolutePath(), im1);
+            	showIms(primaryFile, 1, im1, currentFrame1);
             	slider1.setEnabled(true);
 
             }
@@ -149,12 +153,36 @@ public class Editor {
                 if (secondaryFile == null) {
                     return;
                 }
-                File f = new File(secondaryFile, secondaryFile.getName() + "0001.rgb");
-            	showIms(f.getAbsolutePath(), im2);
+            	showIms(secondaryFile, 1, im2, currentFrame2);
             	slider2.setEnabled(true);
-
             }
         });
+
+        
+        listTitle = new JLabel();
+        listTitle.setText("List of Hyperlinks");
+
+        helperText = new JLabel();
+        helperText.setHorizontalAlignment(SwingConstants.CENTER);
+
+        linkListModel = new DefaultListModel<String>();
+        // for (int i = 0; i < 15; i++) { linkListModel.addElement("Number " + i); }
+        linkList = new JList<String>(linkListModel);
+        linkList.setFixedCellWidth(150);
+        linkList.addListSelectionListener(new ListSelectionListener() {
+
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting() || !helperText.getText().equals("")) {
+                    return;
+                }
+                System.out.println("Value of JList changed via the listener - " + linkList.getSelectedValue());
+                int newStartFrame = links.get(linkList.getSelectedValue()).getStart();
+                showIms(primaryFile, newStartFrame, im1, currentFrame1);
+                slider1.setValue(newStartFrame);
+                im1.updateFrame(newStartFrame, linkList.getSelectedValue());
+            }
+        });
+        JScrollPane scrollableList = new JScrollPane(linkList);
 
         newHyperlink = new JButton("Create New Hyperlink");
         newHyperlink.setHorizontalAlignment(SwingConstants.CENTER);
@@ -165,11 +193,24 @@ public class Editor {
                     JOptionPane.showMessageDialog(frame, "You must load a primary video before you can create a hyperlink");
                     return;
                 }
-                String newLinkName = JOptionPane.showInputDialog(frame, "Please enter a name for the new link");                
+                if (!helperText.getText().equals("")) {
+                    JOptionPane.showMessageDialog(frame, "You must finish creating the current hyperlink before you can create a new one");
+                    return;
+                }
+
+                String newLinkName = JOptionPane.showInputDialog(frame, "Please enter a name for the new link");
+                if (newLinkName == null) {
+                    return;
+                }          
+
                 im1.createNewLink(newLinkName, colors[colorIndex]);
                 colorIndex = (colorIndex + 1) % colors.length;
+
+                linkListModel.addElement(newLinkName);
+                linkList.setSelectedIndex(linkListModel.size() - 1);
             }
         });
+
 
         connectVideo = new JButton("Connect Video");
         connectVideo.setHorizontalAlignment(SwingConstants.CENTER);
@@ -177,48 +218,40 @@ public class Editor {
         save = new JButton("Save File");
         save.setHorizontalAlignment(SwingConstants.CENTER);
 
-        helperText = new JLabel();
-        helperText.setText("Helper text here");
-        helperText.setHorizontalAlignment(SwingConstants.CENTER);
 
         //Image containers
-        im1 = new DrawableLabel(frame, helperText, links, "Primary Video", SwingConstants.CENTER);
+        im1 = new DrawableLabel(frame, helperText, linkList, links, "Primary Video", SwingConstants.CENTER);
         im1.setMinimumSize(new Dimension(352, 288));
         im1.setPreferredSize(new Dimension(352, 288));
         im2 = new JLabel("Secondary Video", SwingConstants.CENTER);
         im2.setMinimumSize(new Dimension(352, 288));
         im2.setPreferredSize(new Dimension(352, 288));
 
-        String[] s = {"one", "two", "three", "four", "five"};
-        linkList = new JList<String>(s);
 
         //Sliders
         slider1 = new JSlider(JSlider.HORIZONTAL, 1, 9000, 1);
         slider1.addChangeListener(new ChangeListener() {
+
             public void stateChanged(ChangeEvent e) {
 
-                JSlider source = (JSlider)e.getSource();
-                currentFrame1.setText(Integer.toString(source.getValue()));
-                String newFrame = String.format("%04d", source.getValue()) + ".rgb";
-                File f = new File(primaryFile, primaryFile.getName() + newFrame);
-                showIms(f.getAbsolutePath(), im1);
-                im1.updateFrame(source.getValue());
+                int num = ((JSlider)e.getSource()).getValue();
+                showIms(primaryFile, num, im1, currentFrame1);
+                im1.updateFrame(num, null);
             }
         });
         slider1.setEnabled(false);
 
         slider2 = new JSlider(JSlider.HORIZONTAL, 1, 9000, 1);
         slider2.addChangeListener(new ChangeListener() {
+
             public void stateChanged(ChangeEvent e) {
 
-                JSlider source = (JSlider)e.getSource();
-                currentFrame2.setText(Integer.toString(source.getValue()));
-                String newFrame = String.format("%04d", source.getValue()) + ".rgb";
-                File f = new File(secondaryFile, secondaryFile.getName() + newFrame);
-                showIms(f.getAbsolutePath(), im2);
+                int num = ((JSlider)e.getSource()).getValue();
+                showIms(secondaryFile, num, im2, currentFrame2);
             }
         });
         slider2.setEnabled(false);
+
 
         //Current frame labels
         currentFrame1 = new JLabel();
@@ -230,6 +263,7 @@ public class Editor {
         currentFrame2.setHorizontalAlignment(SwingConstants.CENTER);
 
 		GridBagConstraints c = new GridBagConstraints();
+
 
         //Add Buttons
 		// c.anchor = GridBagConstraints.CENTER;
@@ -254,11 +288,16 @@ public class Editor {
         //Add list of hyperlinks
         c.gridy = 1;
         c.gridx = 2;
-        frame.add(linkList, c);
+        c.anchor = GridBagConstraints.SOUTH;
+        frame.add(listTitle, c);
+        c.gridy = 2;
+        c.anchor = GridBagConstraints.CENTER;
+        frame.add(scrollableList, c);
 
         //Add Image containers
-        c.gridheight = 1;
+        c.gridheight = 2;
         c.gridwidth = 2;
+        c.gridy = 1;
         c.gridx = 0;
         frame.add(im1, c);
 
@@ -268,8 +307,9 @@ public class Editor {
         //Add Sliders and current frame labels
         c.fill = GridBagConstraints.HORIZONTAL;
         c.insets = new Insets(0, 5, 0, 5);
+        c.gridheight = 1;
         c.gridx = 0;
-        c.gridy = 2;
+        c.gridy = 3;
         frame.add(slider1, c);
 
         c.gridx = 3;
@@ -278,7 +318,7 @@ public class Editor {
         //Add current frame labels
         c.insets = new Insets(0,0,10,0);
         c.gridx = 0;
-        c.gridy = 3;
+        c.gridy = 4;
         frame.add(currentFrame1, c);
 
         c.gridx = 3;
@@ -286,7 +326,7 @@ public class Editor {
 
         c.gridwidth = 1;
         c.gridx = 2;
-        c.gridy = 2;
+        c.gridy = 3;
         frame.add(helperText, c);
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

@@ -27,13 +27,15 @@ public class DrawableLabel extends JLabel implements MouseListener, MouseMotionL
 
 	JFrame parentFrame;
 	JLabel helpText;
+	JList linkList;
 
 
-	public DrawableLabel(JFrame parent, JLabel help, HashMap<String, Hyperlink> hyperlinks, String name, int orientation) {
+	public DrawableLabel(JFrame parent, JLabel help, JList list, HashMap<String, Hyperlink> hyperlinks, String name, int orientation) {
 		super(name, orientation);
 
 		parentFrame = parent;
 		helpText = help;
+		linkList = list;
 
 		links = hyperlinks;
 		currRects = new HashMap<Rectangle, String>();
@@ -42,9 +44,13 @@ public class DrawableLabel extends JLabel implements MouseListener, MouseMotionL
     	addMouseMotionListener(this);
 	}
 
-	public void updateFrame(int newFrame) { // called when frame number is changed
+	public void updateFrame(int newFrame, String currentLink) { // called when frame number is changed
 		currFrame = newFrame;
 		currRects.clear();
+
+		if (currentLink != null) {
+			currLink = currentLink;
+		}
 		
 		links.forEach((name, link) -> link.getFrames(currFrame, currRects));
 
@@ -90,6 +96,11 @@ public class DrawableLabel extends JLabel implements MouseListener, MouseMotionL
 				if (setCorner(r, e.getPoint()) || r.contains(e.getPoint())) {
 					rect = r;
 					currLink = name;
+					
+					for (int i = 0; i < linkList.getModel().getSize(); i++) {
+						if (linkList.getModel().getElementAt(i).equals(name)) { linkList.setSelectedIndex(i); }
+					}
+
 					mouseClick = e.getPoint();
 					return;
 				}
@@ -196,13 +207,20 @@ public class DrawableLabel extends JLabel implements MouseListener, MouseMotionL
 	@Override
    protected void paintComponent(Graphics g) {
     	super.paintComponent(g);
-    	// g.setColor(Color.magenta);
+    	Graphics2D g2 = (Graphics2D) g;
     
     	if (rect != null) {
     		currRects.put(rect, currLink);
     	}
 
  		currRects.forEach((r, name) -> {
+ 			if (name.equals(currLink)) {
+ 				g2.setStroke(new BasicStroke(3));
+ 			}
+ 			else {
+ 				g2.setStroke(new BasicStroke(1));
+ 			}
+
  			if (newLink != null && name.equals(newLink.getName())) {
  				g.setColor(newLink.getColor());
  			}

@@ -101,8 +101,7 @@ public class Hyperlink {
             frames.add(new Rectangle(prev));
         }
         */
-		System.out.println("Interpolated Rectangles");
-
+		// System.out.println("Interpolated Rectangles");
 	}
 }
 
