@@ -3,8 +3,10 @@ package finalproject;
 import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
+import java.io.*;
 import java.nio.file.Files;
 import java.util.*;
+import javafx.util.*;
 
 public class Hyperlink { // class that represents a single hyperlink, with all of it's associated rects
 	
@@ -15,6 +17,8 @@ public class Hyperlink { // class that represents a single hyperlink, with all o
 
 	ArrayList<Rectangle> frames; // list of frames generated from the keyframes
 	HashMap<Integer, Rectangle> keyframes; // tracks the keyframes and their indices
+
+	Pair<File, Integer> linkedVideo;
 
 
 	public Hyperlink(String name, Color color) {
@@ -32,6 +36,14 @@ public class Hyperlink { // class that represents a single hyperlink, with all o
 	public int getLength() { return length; }
 
 	public Color getColor() { return linkColor; }
+
+	public void setLinkedVideo(File videoFolder, int frameNum) {
+		linkedVideo = new Pair<File, Integer>(videoFolder, frameNum);
+	}
+
+	public Pair<File, Integer> getLinkedVideo() {
+		return linkedVideo;
+	}
 
 	public void addKeyframe(int frame, Rectangle rect) { // adds a key frame
 		if (keyframes.size() == 0) { // sets the start frame
@@ -90,7 +102,7 @@ public class Hyperlink { // class that represents a single hyperlink, with all o
 		generateFrames();
 	}
 
-	public void generateFrames() { // called whenever a keyframe is added, uses those keyframes to generate a list of frames
+	private void generateFrames() { // called whenever a keyframe is added, uses those keyframes to generate a list of frames
 		frames.clear();
         Rectangle prev = keyframes.get(start);
         

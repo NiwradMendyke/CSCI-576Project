@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.border.Border;
+import javafx.util.*;
 import java.util.*;
 
 public class Editor {
@@ -120,17 +121,17 @@ public class Editor {
         loadOne.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
 
-                /*
-                 fc.setDialogTitle("Load Primary Video");
-                 int ret = fc.showOpenDialog(frame);
-                 if (ret == JFileChooser.APPROVE_OPTION) {
-                     primaryFile = fc.getSelectedFile();
-                 }
-                 if (primaryFile == null) {
-                     return;
-                 }
-                 */
-                primaryFile = new File("../London/LondonOne");
+                
+                fc.setDialogTitle("Load Primary Video");
+                int ret = fc.showOpenDialog(frame);
+                if (ret == JFileChooser.APPROVE_OPTION) {
+                    primaryFile = fc.getSelectedFile();
+                }
+                if (primaryFile == null) {
+                    return;
+                }
+                 
+                // primaryFile = new File("../London/LondonOne");
 
             	showIms(primaryFile, 1, im1, currentFrame1);
             	slider1.setEnabled(true);
@@ -151,6 +152,9 @@ public class Editor {
                 if (secondaryFile == null) {
                     return;
                 }
+
+                // secondaryFile = new File("../London/LondonTwo");
+
             	showIms(secondaryFile, 1, im2, currentFrame2);
             	slider2.setEnabled(true);
             }
@@ -170,11 +174,27 @@ public class Editor {
         linkList.addListSelectionListener(new ListSelectionListener() {
 
             public void valueChanged(ListSelectionEvent e) {
+                String selectedLink = linkList.getSelectedValue();
+                // System.out.println("value of linkList changed to " + selectedLink);
+
+                if (links.get(selectedLink) != null) {
+                    im1.updateManager(selectedLink);
+
+                    Pair<File, Integer> linkedVideo = links.get(selectedLink).getLinkedVideo();
+                    if (linkedVideo == null) {
+                        return;
+                    }
+
+                    secondaryFile = linkedVideo.getKey();
+                    showIms(secondaryFile, linkedVideo.getValue(), im2, currentFrame2);
+                    slider2.setValue(linkedVideo.getValue());
+                }
+
                 if (!e.getValueIsAdjusting() || !helperText.getText().equals("")) {
                     return;
                 }
-                int newStartFrame = links.get(linkList.getSelectedValue()).getStart();
 
+                int newStartFrame = links.get(selectedLink).getStart();
                 showIms(primaryFile, newStartFrame, im1, currentFrame1);
                 slider1.setValue(newStartFrame);
                 im1.updateFrame(newStartFrame, linkList.getSelectedValue());
@@ -213,6 +233,25 @@ public class Editor {
 
         connectVideo = new JButton("Connect Video");
         connectVideo.setHorizontalAlignment(SwingConstants.CENTER);
+        connectVideo.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+
+                if (im2.getIcon() == null) {
+                    JOptionPane.showMessageDialog(frame, "You must load a secondary video before you can connect a hyperlink");
+                    return;
+                }
+                if (linkListModel.size() < 1) {
+                    JOptionPane.showMessageDialog(frame, "You must create a hyperlink first");
+                    return;
+                }
+                if (!helperText.getText().equals("")) {
+                    JOptionPane.showMessageDialog(frame, "You must finish creating the current hyperlink before you can connect it to a video");
+                    return;
+                }
+
+                links.get(linkList.getSelectedValue()).setLinkedVideo(secondaryFile, slider2.getValue());
+            }
+        });
 
         save = new JButton("Save File");
         save.setHorizontalAlignment(SwingConstants.CENTER);

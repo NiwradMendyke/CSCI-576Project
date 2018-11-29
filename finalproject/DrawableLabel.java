@@ -47,6 +47,10 @@ public class DrawableLabel extends JLabel implements MouseListener, MouseMotionL
     	addMouseMotionListener(this);
 	}
 
+	public void updateManager(String selectedLink) {
+		hyperlinkManager.updateManager(links.get(selectedLink));
+	}
+
 	public void updateFrame() { // called by hyperlinkmanager to just update rects in the current frame
 		currRects.clear();
 
@@ -71,7 +75,7 @@ public class DrawableLabel extends JLabel implements MouseListener, MouseMotionL
 	public void updateFrame(int newFrame, String currentLink) { // called by Editor to update current frame number, rects, and the current hyperlink
 		currFrame = newFrame;
 		currLink = currentLink;
-		hyperlinkManager.updateManager(links.get(currLink));
+		// hyperlinkManager.updateManager(links.get(currLink));
 		updateFrame();
 	}
 
@@ -103,17 +107,18 @@ public class DrawableLabel extends JLabel implements MouseListener, MouseMotionL
 		}
 		if (drawMode == 3) {
 			currRects.forEach((r, name) -> {
-				if (setCorner(r, e.getPoint()) || r.contains(e.getPoint())) {
+				if (rect == null && (setCorner(r, e.getPoint()) || r.contains(e.getPoint()))) {
 					rect = r;
 					currLink = name;
+					// hyperlinkManager.updateManager(links.get(currLink));
+					mouseClick = e.getPoint();
 					
 					for (int i = 0; i < linkList.getModel().getSize(); i++) {
 						// used to update the selected hyperlink in the gui list to whichever hyperlink the user is editing
-						if (linkList.getModel().getElementAt(i).equals(name)) { linkList.setSelectedIndex(i); }
+						if (linkList.getModel().getElementAt(i).equals(name)) { 
+							linkList.setSelectedIndex(i);
+						}
 					}
-
-					mouseClick = e.getPoint();
-					return;
 				}
 			});
 		}
@@ -126,18 +131,17 @@ public class DrawableLabel extends JLabel implements MouseListener, MouseMotionL
 			drawMode = 2;
 			helpText.setText("Draw end frame");
 		}
+		if (drawMode == 3) {
+			links.get(currLink).addKeyframe(currFrame, rect);
+			rect = null;
+		}
 		if (drawMode == 2 && rect != null) {
 			newLink.addKeyframe(currFrame, rect);
 			links.put(newLink.getName(), newLink);
 			hyperlinkManager.updateManager(newLink);
 			rect = null;
-			drawMode = 0;
+			drawMode = 3;
 			helpText.setText("");
-		}
-		if (drawMode == 3) {
-			links.get(currLink).addKeyframe(currFrame, rect);
-			hyperlinkManager.updateManager(links.get(currLink));
-			rect = null;
 		}
 	}
 
