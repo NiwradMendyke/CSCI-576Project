@@ -8,11 +8,12 @@ import javax.swing.*;
 import javax.swing.event.*;
 import java.util.*;
 
-public class DrawableLabel extends JLabel implements MouseListener, MouseMotionListener {
+public class DrawableLabel extends JLabel implements MouseListener, MouseMotionListener { // custom JLabel with drawing functionalities
 
 	HashMap<String, Hyperlink> links; // reference to master list of hyperlinks in Editor.java
 	Hyperlink newLink; // temporary reference to new hyperlink 
 	String currLink;
+	HyperlinkManager hyperlinkManager;
 
 	int currFrame = 1; // current frame being displayed
 	HashMap<Rectangle, String> currRects; // list of hyperlink boxes in the current frame
@@ -40,18 +41,15 @@ public class DrawableLabel extends JLabel implements MouseListener, MouseMotionL
 		links = hyperlinks;
 		currRects = new HashMap<Rectangle, String>();
 
+		hyperlinkManager = new HyperlinkManager(parent, this);
+
 		addMouseListener(this);
     	addMouseMotionListener(this);
 	}
 
-	public void updateFrame(int newFrame, String currentLink) { // called when frame number is changed
-		currFrame = newFrame;
+	public void updateFrame() { // called by hyperlinkmanager to just update rects in the current frame
 		currRects.clear();
 
-		if (currentLink != null) {
-			currLink = currentLink;
-		}
-		
 		links.forEach((name, link) -> link.getFrames(currFrame, currRects));
 
 		if (drawMode == 2) {
@@ -63,6 +61,18 @@ public class DrawableLabel extends JLabel implements MouseListener, MouseMotionL
 		if (drawMode == 3 && currRects.size() == 0) {
 			drawMode = 0;
 		}
+	}
+
+	public void updateFrame(int newFrame) { // called by Editor to update current frame number and the rects in the current frame
+		currFrame = newFrame;
+		updateFrame();
+	}
+
+	public void updateFrame(int newFrame, String currentLink) { // called by Editor to update current frame number, rects, and the current hyperlink
+		currFrame = newFrame;
+		currLink = currentLink;
+		hyperlinkManager.updateManager(links.get(currLink));
+		updateFrame();
 	}
 
 	public void createNewLink(String name, Color color) { // called by Editor.java to start process for new hyperlink
@@ -98,6 +108,7 @@ public class DrawableLabel extends JLabel implements MouseListener, MouseMotionL
 					currLink = name;
 					
 					for (int i = 0; i < linkList.getModel().getSize(); i++) {
+						// used to update the selected hyperlink in the gui list to whichever hyperlink the user is editing
 						if (linkList.getModel().getElementAt(i).equals(name)) { linkList.setSelectedIndex(i); }
 					}
 
@@ -118,17 +129,23 @@ public class DrawableLabel extends JLabel implements MouseListener, MouseMotionL
 		if (drawMode == 2 && rect != null) {
 			newLink.addKeyframe(currFrame, rect);
 			links.put(newLink.getName(), newLink);
+			hyperlinkManager.updateManager(newLink);
 			rect = null;
 			drawMode = 0;
 			helpText.setText("");
 		}
 		if (drawMode == 3) {
 			links.get(currLink).addKeyframe(currFrame, rect);
+			hyperlinkManager.updateManager(links.get(currLink));
 			rect = null;
 		}
 	}
 
 	public void mouseDragged(MouseEvent e) {
+		if (currRects.get(rect) != null) { // removes previous instance of the rect from currRects before adding the updated version
+			currRects.remove(rect);
+		}
+
 		if (drawMode == 1) {
 			rect.setSize(e.getX() - (int)rect.getX(), e.getY() - (int)rect.getY());
 		}

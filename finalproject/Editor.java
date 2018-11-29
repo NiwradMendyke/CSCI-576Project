@@ -10,8 +10,6 @@ import javax.swing.event.*;
 import javax.swing.border.Border;
 import java.util.*;
 
-// import DrawableLabel;
-
 public class Editor {
 
     HashMap<String, Hyperlink> links; // master list of hyperlinks for a loaded primary video, might be replaced later
@@ -22,7 +20,7 @@ public class Editor {
     JLabel currentFrame1, currentFrame2;
     JSlider slider1, slider2;
     JList<String> linkList;
-    DefaultListModel<String> linkListModel;
+    DefaultListModel<String> linkListModel; // defaultlistmodel used for the list of links
 
 	BufferedImage ogImg;
 	BufferedImage scaledImg;
@@ -165,8 +163,8 @@ public class Editor {
         helperText = new JLabel();
         helperText.setHorizontalAlignment(SwingConstants.CENTER);
 
+        // the selectable list of hyperlinks
         linkListModel = new DefaultListModel<String>();
-        // for (int i = 0; i < 15; i++) { linkListModel.addElement("Number " + i); }
         linkList = new JList<String>(linkListModel);
         linkList.setFixedCellWidth(150);
         linkList.addListSelectionListener(new ListSelectionListener() {
@@ -175,8 +173,8 @@ public class Editor {
                 if (!e.getValueIsAdjusting() || !helperText.getText().equals("")) {
                     return;
                 }
-                System.out.println("Value of JList changed via the listener - " + linkList.getSelectedValue());
                 int newStartFrame = links.get(linkList.getSelectedValue()).getStart();
+
                 showIms(primaryFile, newStartFrame, im1, currentFrame1);
                 slider1.setValue(newStartFrame);
                 im1.updateFrame(newStartFrame, linkList.getSelectedValue());
@@ -184,6 +182,7 @@ public class Editor {
         });
         JScrollPane scrollableList = new JScrollPane(linkList);
 
+        // the create new hyperlink button
         newHyperlink = new JButton("Create New Hyperlink");
         newHyperlink.setHorizontalAlignment(SwingConstants.CENTER);
         newHyperlink.addActionListener(new ActionListener() {
@@ -206,7 +205,7 @@ public class Editor {
                 im1.createNewLink(newLinkName, colors[colorIndex]);
                 colorIndex = (colorIndex + 1) % colors.length;
 
-                linkListModel.addElement(newLinkName);
+                linkListModel.addElement(newLinkName); // adds the newly-named hyperlink to the list
                 linkList.setSelectedIndex(linkListModel.size() - 1);
             }
         });
@@ -236,7 +235,7 @@ public class Editor {
 
                 int num = ((JSlider)e.getSource()).getValue();
                 showIms(primaryFile, num, im1, currentFrame1);
-                im1.updateFrame(num, null);
+                im1.updateFrame(num);
             }
         });
         slider1.setEnabled(false);

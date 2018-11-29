@@ -6,15 +6,15 @@ import java.awt.event.*;
 import java.nio.file.Files;
 import java.util.*;
 
-public class Hyperlink {
+public class Hyperlink { // class that represents a single hyperlink, with all of it's associated rects
 	
 	String linkName;
 	int start, length;
 
-	Color linkColor;
+	Color linkColor; // color to draw the link with
 
-	HashMap<Integer, Rectangle> keyframes;
-	ArrayList<Rectangle> frames;
+	ArrayList<Rectangle> frames; // list of frames generated from the keyframes
+	HashMap<Integer, Rectangle> keyframes; // tracks the keyframes and their indices
 
 
 	public Hyperlink(String name, Color color) {
@@ -35,13 +35,13 @@ public class Hyperlink {
 
 	public void addKeyframe(int frame, Rectangle rect) { // adds a key frame
 		if (keyframes.size() == 0) { // sets the start frame
-			System.out.println("Adding start frame to " + linkName + " at " + frame);
 			frames.add(new Rectangle(rect));
 			start = frame;
 		}
 		if (keyframes.size() == 1) { // sets the end frame
 			length = frame - start;
 		}
+
 		keyframes.put(frame, new Rectangle(rect));
 		if (keyframes.size() >= 2) {
 			generateFrames();
@@ -55,13 +55,49 @@ public class Hyperlink {
 		}
 	}
 
-	private void generateFrames() { // called whenever a keyframe is added, uses those keyframes to generate a list of frames
-		System.out.println("Generating frames from " + keyframes.size() + " keyframes");
+	public void setStartEndFrames(int newStart, int newEnd) { // allows the hyperlinkmanager to modify the start/end frames of the hyperlink
+		int oldEnd = start + length;
+
+		if (newStart < start) {
+			keyframes.put(newStart, keyframes.get(start));
+			start = newStart;
+			length = oldEnd - start;
+		}
+		if (newStart > start) {
+			keyframes.put(newStart, keyframes.get(start));
+			for (int i = start; i < newStart; i++) {
+				if (keyframes.get(i) != null) {
+					keyframes.remove(i);
+				}
+			}
+			start = newStart;
+			length = oldEnd - start;
+		}
+		if (newEnd < oldEnd) {
+			keyframes.put(newEnd, keyframes.get(oldEnd));
+			for (int i = newEnd+1; i <= oldEnd; i++) {
+				if (keyframes.get(i) != null) {
+					keyframes.remove(i);
+				}
+			}
+			length = newEnd - start;
+		}
+		if (newEnd > oldEnd) {
+			keyframes.put(newEnd, keyframes.get(oldEnd));
+			length = newEnd - start;
+		}
+
+		generateFrames();
+	}
+
+	public void generateFrames() { // called whenever a keyframe is added, uses those keyframes to generate a list of frames
 		frames.clear();
         Rectangle prev = keyframes.get(start);
         
         int i = 0;
         while (i <= length) {
+        	frames.add(prev);
+
             int j = i+1;
             //Find next keyframe
             //if doesn't exist, then break loop
@@ -80,28 +116,18 @@ public class Hyperlink {
             double height_mod = (next.getHeight() - prev.getHeight()) / (j-i);
             
 
-            int k = 0;
-            while (i+k != j+1) {
+            int k = 1;
+            while (i+k != j) {
                 int x = (int) Math.round(prev.getX() + x_mod*k);
                 int y = (int) Math.round(prev.getY() + y_mod*k);
                 int width = (int) Math.round(prev.getWidth() + width_mod*k);
                 int height = (int) Math.round(prev.getHeight() + height_mod*k);
                 frames.add(new Rectangle(x, y, width, height));
                 k+=1;
-                }
+            }
             i = j;
             prev = next;
         }
-        
-        /*
-        for (int i = 0; i <= length; i++) {
-            if (keyframes.get(start + i) != null) {
-                prev =  keyframes.get(start + i);
-            }
-            frames.add(new Rectangle(prev));
-        }
-        */
-		// System.out.println("Interpolated Rectangles");
 	}
 }
 
