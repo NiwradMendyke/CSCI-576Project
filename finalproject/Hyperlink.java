@@ -37,6 +37,10 @@ public class Hyperlink { // class that represents a single hyperlink, with all o
 
 	public Color getColor() { return linkColor; }
 
+	public void setName(String newName) {
+		linkName = newName;
+	}
+
 	public void setLinkedVideo(File videoFolder, int frameNum) {
 		linkedVideo = new Pair<File, Integer>(videoFolder, frameNum);
 	}

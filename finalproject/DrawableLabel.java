@@ -28,10 +28,10 @@ public class DrawableLabel extends JLabel implements MouseListener, MouseMotionL
 
 	JFrame parentFrame;
 	JLabel helpText;
-	JList linkList;
+	JList<String> linkList;
 
 
-	public DrawableLabel(JFrame parent, JLabel help, JList list, HashMap<String, Hyperlink> hyperlinks, String name, int orientation) {
+	public DrawableLabel(JFrame parent, JLabel help, JList<String> list, HashMap<String, Hyperlink> hyperlinks, String name, int orientation) {
 		super(name, orientation);
 
 		parentFrame = parent;
@@ -77,6 +77,19 @@ public class DrawableLabel extends JLabel implements MouseListener, MouseMotionL
 		currLink = currentLink;
 		// hyperlinkManager.updateManager(links.get(currLink));
 		updateFrame();
+	}
+
+	public void updateName(String oldName, String newName) { // updates the name of the given hyperlink
+		links.get(oldName).setName(newName);
+		links.put(newName, links.get(oldName));
+		links.remove(oldName); // modifies the master list of name/hyperlinks
+
+		DefaultListModel<String> model = (DefaultListModel<String>) linkList.getModel();
+		model.setElementAt(newName, linkList.getSelectedIndex());
+		linkList.setModel(model); // updates the Jlist data
+
+		currLink = newName;
+		updateFrame(); // updates current frames
 	}
 
 	public void createNewLink(String name, Color color) { // called by Editor.java to start process for new hyperlink
