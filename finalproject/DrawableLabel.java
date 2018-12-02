@@ -10,7 +10,7 @@ import java.util.*;
 
 public class DrawableLabel extends JLabel implements MouseListener, MouseMotionListener { // custom JLabel with drawing functionalities
 
-	HashMap<String, Hyperlink> links; // reference to master list of hyperlinks in Editor.java
+	public HashMap<String, Hyperlink> links; // reference to master list of hyperlinks in Editor.java
 	Hyperlink newLink; // temporary reference to new hyperlink 
 	String currLink;
 	HyperlinkManager hyperlinkManager;

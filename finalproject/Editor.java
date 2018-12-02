@@ -62,7 +62,7 @@ public class Editor {
 		return img;
 	}
 
-	public void showIms(File videoFolder, int num, JLabel im, JLabel frameNum) {
+	public void showIms(File videoFolder, int num, JLabel im, JLabel frameNum, JSlider slider) {
         frameNum.setText(Integer.toString(num));
         String newFrame = String.format("%04d", num) + ".rgb";
         File f = new File(videoFolder, videoFolder.getName() + newFrame);
@@ -93,11 +93,13 @@ public class Editor {
 		catch(IOException e) {
 			System.out.println("Error: "+e);
 		}
+
+        slider.setEnabled(true);
 	}
 
     public void updatePrimary(String selectedLink) {
         int newStartFrame = links.get(selectedLink).getStart();
-        showIms(primaryFile, newStartFrame, im1, currentFrame1);
+        showIms(primaryFile, newStartFrame, im1, currentFrame1, slider1);
         slider1.setValue(newStartFrame);
         im1.updateFrame(newStartFrame, linkList.getSelectedValue());
     }
@@ -126,23 +128,53 @@ public class Editor {
         loadOne = new JButton("Load Primary");
         loadOne.setHorizontalAlignment(SwingConstants.CENTER);
         loadOne.addActionListener(new ActionListener() {
+            @SuppressWarnings("unchecked")
             public void actionPerformed(ActionEvent e) {
 
                 
-                // fc.setDialogTitle("Load Primary Video");
-                // int ret = fc.showOpenDialog(frame);
-                // if (ret == JFileChooser.APPROVE_OPTION) {
-                //     primaryFile = fc.getSelectedFile();
-                // }
-                // if (primaryFile == null) {
-                //     return;
-                // }
+                fc.setDialogTitle("Load Primary Video");
+                int ret = fc.showOpenDialog(frame);
+                if (ret == JFileChooser.APPROVE_OPTION) {
+                    primaryFile = fc.getSelectedFile();
+                }
+                if (primaryFile == null) {
+                    return;
+                }
                  
-                primaryFile = new File("../London/LondonOne");
 
-            	showIms(primaryFile, 1, im1, currentFrame1);
-            	slider1.setEnabled(true);
+                File linkData = new File(primaryFile, "hyperlinks");
+                if (linkData.exists()) {
+                    try {
+                        
+                        FileInputStream fileStream = new FileInputStream(linkData);
+                        ObjectInputStream linkStream = new ObjectInputStream(fileStream);
 
+                        links = (HashMap<String, Hyperlink>)linkStream.readObject();
+
+                        linkStream.close();
+                        fileStream.close();
+
+                        for (String linkName : links.keySet()) {
+                            linkListModel.addElement(linkName);
+                        }
+                        im1.links = links;
+                        im1.updateFrame();
+                        colorIndex = (links.size() + 1) % colors.length;
+
+                        System.out.println("Hyperlinks have been loaded");
+                    }
+
+                    catch (IOException exception) {
+                        System.out.println("IOException, links may not have loaded");
+                    }
+                    catch (ClassNotFoundException exception) {
+                        System.out.println("Class Not Found Exception, links may not have loaded");
+                    }
+                }
+                // primaryFile = new File("../London/LondonOne");
+
+
+            	showIms(primaryFile, 1, im1, currentFrame1, slider1);
             }
         });
 
@@ -162,8 +194,7 @@ public class Editor {
 
                 secondaryFile = new File("../London/LondonTwo");
 
-            	showIms(secondaryFile, 1, im2, currentFrame2);
-            	slider2.setEnabled(true);
+            	showIms(secondaryFile, 1, im2, currentFrame2, slider2);
             }
         });
 
@@ -190,7 +221,7 @@ public class Editor {
                     Pair<File, Integer> linkedVideo = links.get(selectedLink).getLinkedVideo();
                     if (linkedVideo != null) {
                         secondaryFile = linkedVideo.getKey();
-                        showIms(secondaryFile, linkedVideo.getValue(), im2, currentFrame2);
+                        showIms(secondaryFile, linkedVideo.getValue(), im2, currentFrame2, slider2);
                         slider2.setValue(linkedVideo.getValue());
                     }
                 }
@@ -305,6 +336,31 @@ public class Editor {
         });
 
         save = new JButton("Save File");
+        save.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    File linkData = new File(primaryFile, "hyperlinks");
+                    FileOutputStream fileStream = new FileOutputStream(linkData, false);
+                    ObjectOutputStream linkStream = new ObjectOutputStream(fileStream);
+
+                    linkStream.writeObject(links);
+
+                    linkStream.close();
+                    fileStream.close();
+
+                    System.out.println("Links have been saved");
+                }
+
+                catch (IOException exception) {
+                    System.out.println("IOException, Links may not have been saved");
+                }
+
+
+
+
+
+            }
+        });
         save.setHorizontalAlignment(SwingConstants.CENTER);
 
 
@@ -324,7 +380,7 @@ public class Editor {
             public void stateChanged(ChangeEvent e) {
 
                 int num = ((JSlider)e.getSource()).getValue();
-                showIms(primaryFile, num, im1, currentFrame1);
+                showIms(primaryFile, num, im1, currentFrame1, slider1);
                 im1.updateFrame(num);
             }
         });
@@ -336,7 +392,7 @@ public class Editor {
             public void stateChanged(ChangeEvent e) {
 
                 int num = ((JSlider)e.getSource()).getValue();
-                showIms(secondaryFile, num, im2, currentFrame2);
+                showIms(secondaryFile, num, im2, currentFrame2, slider2);
             }
         });
         slider2.setEnabled(false);

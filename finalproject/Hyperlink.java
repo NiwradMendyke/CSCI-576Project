@@ -8,7 +8,7 @@ import java.nio.file.Files;
 import java.util.*;
 import javafx.util.*;
 
-public class Hyperlink { // class that represents a single hyperlink, with all of it's associated rects
+public class Hyperlink implements java.io.Serializable { // class that represents a single hyperlink, with all of it's associated rects
 	
 	String linkName;
 	int start, length;
