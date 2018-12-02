@@ -132,6 +132,7 @@ public class Editor {
                     return;
                 }
                  
+
                 File linkData = new File(primaryFile, "hyperlinks");
                 if (linkData.exists()) {
                     try {
@@ -163,6 +164,7 @@ public class Editor {
                 }
                 // primaryFile = new File("../London/LondonOne");
 
+
             	showIms(primaryFile, 1, im1, currentFrame1);
             	slider1.setEnabled(true);
 
@@ -174,16 +176,16 @@ public class Editor {
         loadTwo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
 
-                fc.setDialogTitle("Load Secondary Video");
-                int ret = fc.showOpenDialog(frame);
-                if (ret == JFileChooser.APPROVE_OPTION) {
-                    secondaryFile = fc.getSelectedFile();
-                }
-                if (secondaryFile == null) {
-                    return;
-                }
+                // fc.setDialogTitle("Load Secondary Video");
+                // int ret = fc.showOpenDialog(frame);
+                // if (ret == JFileChooser.APPROVE_OPTION) {
+                //     secondaryFile = fc.getSelectedFile();
+                // }
+                // if (secondaryFile == null) {
+                //     return;
+                // }
 
-                // secondaryFile = new File("../London/LondonTwo");
+                secondaryFile = new File("../London/LondonTwo");
 
             	showIms(secondaryFile, 1, im2, currentFrame2);
             	slider2.setEnabled(true);
@@ -211,13 +213,11 @@ public class Editor {
                     im1.updateManager(selectedLink);
 
                     Pair<File, Integer> linkedVideo = links.get(selectedLink).getLinkedVideo();
-                    if (linkedVideo == null) {
-                        return;
+                    if (linkedVideo != null) {
+                        secondaryFile = linkedVideo.getKey();
+                        showIms(secondaryFile, linkedVideo.getValue(), im2, currentFrame2);
+                        slider2.setValue(linkedVideo.getValue());
                     }
-
-                    secondaryFile = linkedVideo.getKey();
-                    showIms(secondaryFile, linkedVideo.getValue(), im2, currentFrame2);
-                    slider2.setValue(linkedVideo.getValue());
                 }
 
                 if (!e.getValueIsAdjusting() || !helperText.getText().equals("")) {

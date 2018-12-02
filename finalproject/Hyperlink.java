@@ -37,6 +37,10 @@ public class Hyperlink implements java.io.Serializable { // class that represent
 
 	public Color getColor() { return linkColor; }
 
+	public void setName(String newName) {
+		linkName = newName;
+	}
+
 	public void setLinkedVideo(File videoFolder, int frameNum) {
 		linkedVideo = new Pair<File, Integer>(videoFolder, frameNum);
 	}
