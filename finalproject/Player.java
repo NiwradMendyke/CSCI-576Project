@@ -16,7 +16,7 @@ public class Player {
     HashMap<String, Hyperlink> links; // master list of hyperlinks for a loaded primary video, might be replaced later
 
 	JFrame frame;
-	JLabel im1;
+	ClickableLabel im1;
     JSlider slider1;
     JLabel currentFrame1;
 
@@ -91,6 +91,7 @@ public class Player {
         slider1.setValue(slider1.getValue()+1);
         currentFrame1.setText(Integer.toString(slider1.getValue()));
         showIms(primaryFile, slider1.getValue(), im1, currentFrame1);
+        im1.updateFrame(slider1.getValue());
 
         java.util.Timer t = new java.util.Timer();
         if (playing && slider1.getValue() != 9000) {
@@ -151,6 +152,9 @@ public class Player {
                         linkStream.close();
                         fileStream.close();
 
+                        im1.links = links;
+                        im1.updateFrame();
+
                         System.out.println("Hyperlinks have been loaded");
                     }
 
@@ -171,7 +175,7 @@ public class Player {
 
 
 
-        im1 = new JLabel("Load Video", SwingConstants.CENTER);
+        im1 = new ClickableLabel(frame, links, "Load Video", SwingConstants.CENTER);
         im1.setMinimumSize(new Dimension(352, 288));
         im1.setPreferredSize(new Dimension(352, 288));
 
