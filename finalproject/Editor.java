@@ -119,6 +119,7 @@ public class Editor {
         loadOne = new JButton("Load Primary");
         loadOne.setHorizontalAlignment(SwingConstants.CENTER);
         loadOne.addActionListener(new ActionListener() {
+            @SuppressWarnings("unchecked")
             public void actionPerformed(ActionEvent e) {
 
                 
@@ -131,6 +132,34 @@ public class Editor {
                     return;
                 }
                  
+                File linkData = new File(primaryFile, "hyperlinks");
+                if (linkData.exists()) {
+                    try {
+                        
+                        FileInputStream fileStream = new FileInputStream(linkData);
+                        ObjectInputStream linkStream = new ObjectInputStream(fileStream);
+
+                        links = (HashMap<String, Hyperlink>)linkStream.readObject();
+
+                        linkStream.close();
+                        fileStream.close();
+
+                        for (String linkName : links.keySet()) {
+                            linkListModel.addElement(linkName);
+                        }
+                        im1.links = links;
+                        im1.updateFrame();
+
+                        System.out.println("Hyperlinks have been loaded");
+                    }
+
+                    catch (IOException exception) {
+                        System.out.println("IOException, links may not have loaded");
+                    }
+                    catch (ClassNotFoundException exception) {
+                        System.out.println("Class Not Found Exception, links may not have loaded");
+                    }
+                }
                 // primaryFile = new File("../London/LondonOne");
 
             	showIms(primaryFile, 1, im1, currentFrame1);
@@ -254,6 +283,31 @@ public class Editor {
         });
 
         save = new JButton("Save File");
+        save.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    File linkData = new File(primaryFile, "hyperlinks");
+                    FileOutputStream fileStream = new FileOutputStream(linkData, false);
+                    ObjectOutputStream linkStream = new ObjectOutputStream(fileStream);
+
+                    linkStream.writeObject(links);
+
+                    linkStream.close();
+                    fileStream.close();
+
+                    System.out.println("Links have been saved");
+                }
+
+                catch (IOException exception) {
+                    System.out.println("IOException, Links may not have been saved");
+                }
+
+
+
+
+
+            }
+        });
         save.setHorizontalAlignment(SwingConstants.CENTER);
 
 
