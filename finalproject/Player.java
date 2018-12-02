@@ -168,7 +168,6 @@ public class Player {
                 showIms(primaryFile, 1, im1, currentFrame1);
                 playing = true;
                 playVideo();
-            	slider1.setEnabled(true);
 
             }
         });
@@ -180,10 +179,12 @@ public class Player {
                 if (pause.getText() == "Pause") {
                     pause.setText("Play");
                     playing = false;
+                    slider1.setEnabled(true);
                 }
                 else if (pause.getText() == "Play") {
                     pause.setText("Pause");
                     playing = true;
+                    slider1.setEnabled(false);
                     playVideo();
                 }
             }
@@ -201,6 +202,8 @@ public class Player {
             public void stateChanged(ChangeEvent e) {
 
                 int num = ((JSlider)e.getSource()).getValue();
+                im1.updateFrame(num);
+                showIms(primaryFile, num, im1, currentFrame1);
             }
         });
         slider1.setEnabled(false);
