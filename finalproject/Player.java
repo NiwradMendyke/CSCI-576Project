@@ -110,7 +110,7 @@ public class Player {
 
 	public void createGUI() {
 
-        JButton load;
+        JButton load, pause;
 
         JFileChooser fc = new JFileChooser();
 
@@ -173,6 +173,22 @@ public class Player {
             }
         });
 
+        pause = new JButton("Pause");
+        pause.setHorizontalAlignment(SwingConstants.CENTER);
+        pause.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (pause.getText() == "Pause") {
+                    pause.setText("Play");
+                    playing = false;
+                }
+                else if (pause.getText() == "Play") {
+                    pause.setText("Pause");
+                    playing = true;
+                    playVideo();
+                }
+            }
+        });
+
 
 
         im1 = new ClickableLabel(frame, links, "Load Video", SwingConstants.CENTER);
@@ -221,6 +237,9 @@ public class Player {
         c.gridx = 0;
         c.gridy = 4;
         frame.add(currentFrame1, c);
+
+        c.gridy = 5;
+        frame.add(pause, c);
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.pack();
