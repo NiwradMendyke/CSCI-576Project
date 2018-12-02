@@ -149,6 +149,7 @@ public class Editor {
                         }
                         im1.links = links;
                         im1.updateFrame();
+                        colorIndex = (links.size() + 1) % colors.length;
 
                         System.out.println("Hyperlinks have been loaded");
                     }
