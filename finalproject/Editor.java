@@ -95,6 +95,13 @@ public class Editor {
 		}
 	}
 
+    public void updatePrimary(String selectedLink) {
+        int newStartFrame = links.get(selectedLink).getStart();
+        showIms(primaryFile, newStartFrame, im1, currentFrame1);
+        slider1.setValue(newStartFrame);
+        im1.updateFrame(newStartFrame, linkList.getSelectedValue());
+    }
+
 
 	public void createGUI() {
 
@@ -175,7 +182,7 @@ public class Editor {
 
             public void valueChanged(ListSelectionEvent e) {
                 String selectedLink = linkList.getSelectedValue();
-                // System.out.println("value of linkList changed to " + selectedLink);
+                System.out.println("value of linkList changed to " + selectedLink);
 
                 if (links.get(selectedLink) != null) {
                     im1.updateManager(selectedLink);
@@ -192,10 +199,60 @@ public class Editor {
                     return;
                 }
 
-                int newStartFrame = links.get(selectedLink).getStart();
-                showIms(primaryFile, newStartFrame, im1, currentFrame1);
-                slider1.setValue(newStartFrame);
-                im1.updateFrame(newStartFrame, linkList.getSelectedValue());
+                // for some reason this has to be protected by the getValueIsAdjusting() function otherwise
+                // we get concurrentmodification errors from the hashmap in DrawableLabel
+                updatePrimary(selectedLink); 
+            }
+        });
+        linkList.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                int index = linkList.locationToIndex(e.getPoint());
+                if (index == -1 || !helperText.getText().equals("")) {
+                    return;
+                }
+
+                if (e.getClickCount() == 2) {
+                    System.out.println("double-click on index " + index);
+
+                    linkList.clearSelection();
+                    linkList.setSelectedIndex(index);
+                    updatePrimary(linkList.getSelectedValue());
+                }
+
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    System.out.println("right-click on index " + index);
+
+                    linkList.setSelectedIndex(index);
+                    updatePrimary(linkList.getSelectedValue());
+
+                    JMenuItem editNameAction = new JMenuItem("Edit Name");
+                    editNameAction.addActionListener(ae -> {
+                        String newName = JOptionPane.showInputDialog("Enter a new name for the Hyperlink", linkList.getSelectedValue());
+                        if (newName == null) {
+                            return;
+                        }
+                        
+                        im1.updateName(linkList.getSelectedValue(), newName);
+
+                        linkListModel.setElementAt(newName, index);
+                        linkList.setSelectedIndex(index);
+                        im1.updateManager(newName);
+                    });
+
+                    JMenuItem deleteAction = new JMenuItem("Delete Link");
+                    deleteAction.addActionListener(ae -> {
+                        im1.deleteLink(linkList.getSelectedValue());
+
+                        linkListModel.remove(index);
+                        linkList.clearSelection();
+                        im1.updateManager(null);
+                    });
+
+                    JPopupMenu menu = new JPopupMenu();
+                    menu.add(editNameAction);
+                    menu.add(deleteAction);
+                    menu.show(e.getComponent(), e.getX(), e.getY());
+                }
             }
         });
         JScrollPane scrollableList = new JScrollPane(linkList);
@@ -203,52 +260,48 @@ public class Editor {
         // the create new hyperlink button
         newHyperlink = new JButton("Create New Hyperlink");
         newHyperlink.setHorizontalAlignment(SwingConstants.CENTER);
-        newHyperlink.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        newHyperlink.addActionListener(e -> {
 
-                if (im1.getIcon() == null) {
-                    JOptionPane.showMessageDialog(frame, "You must load a primary video before you can create a hyperlink");
-                    return;
-                }
-                if (!helperText.getText().equals("")) {
-                    JOptionPane.showMessageDialog(frame, "You must finish creating the current hyperlink before you can create a new one");
-                    return;
-                }
-
-                String newLinkName = JOptionPane.showInputDialog(frame, "Please enter a name for the new link");
-                if (newLinkName == null) {
-                    return;
-                }          
-
-                im1.createNewLink(newLinkName, colors[colorIndex]);
-                colorIndex = (colorIndex + 1) % colors.length;
-
-                linkListModel.addElement(newLinkName); // adds the newly-named hyperlink to the list
-                linkList.setSelectedIndex(linkListModel.size() - 1);
+            if (im1.getIcon() == null) {
+                JOptionPane.showMessageDialog(frame, "You must load a primary video before you can create a hyperlink");
+                return;
             }
+            if (!helperText.getText().equals("")) {
+                JOptionPane.showMessageDialog(frame, "You must finish creating the current hyperlink before you can create a new one");
+                return;
+            }
+
+            String newLinkName = JOptionPane.showInputDialog(frame, "Please enter a name for the new link");
+            if (newLinkName == null) {
+                return;
+            }          
+
+            im1.createNewLink(newLinkName, colors[colorIndex]);
+            colorIndex = (colorIndex + 1) % colors.length;
+
+            linkListModel.addElement(newLinkName); // adds the newly-named hyperlink to the list
+            linkList.setSelectedIndex(linkListModel.size() - 1);
         });
 
 
         connectVideo = new JButton("Connect Video");
         connectVideo.setHorizontalAlignment(SwingConstants.CENTER);
-        connectVideo.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        connectVideo.addActionListener(e -> {
 
-                if (im2.getIcon() == null) {
-                    JOptionPane.showMessageDialog(frame, "You must load a secondary video before you can connect a hyperlink");
-                    return;
-                }
-                if (linkListModel.size() < 1) {
-                    JOptionPane.showMessageDialog(frame, "You must create a hyperlink first");
-                    return;
-                }
-                if (!helperText.getText().equals("")) {
-                    JOptionPane.showMessageDialog(frame, "You must finish creating the current hyperlink before you can connect it to a video");
-                    return;
-                }
-
-                links.get(linkList.getSelectedValue()).setLinkedVideo(secondaryFile, slider2.getValue());
+            if (im2.getIcon() == null) {
+                JOptionPane.showMessageDialog(frame, "You must load a secondary video before you can connect a hyperlink");
+                return;
             }
+            if (linkListModel.size() < 1) {
+                JOptionPane.showMessageDialog(frame, "You must create a hyperlink first");
+                return;
+            }
+            if (!helperText.getText().equals("")) {
+                JOptionPane.showMessageDialog(frame, "You must finish creating the current hyperlink before you can connect it to a video");
+                return;
+            }
+
+            links.get(linkList.getSelectedValue()).setLinkedVideo(secondaryFile, slider2.getValue());
         });
 
         save = new JButton("Save File");

@@ -14,7 +14,7 @@ public class HyperlinkManager { // secondary window used to allow user to modify
 
 	JFrame frame, parentFrame;
 	JTextField startFrame, endFrame;
-	JButton changeName, update;
+	JButton update;
 
 	DrawableLabel parentLabel;
 
@@ -45,18 +45,6 @@ public class HyperlinkManager { // secondary window used to allow user to modify
 		startFrame = new JTextField(10);
 		endFrame = new JTextField(10);
 
-		changeName = new JButton("Edit Name");
-		changeName.setHorizontalAlignment(SwingConstants.CENTER);
-		changeName.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				String newName = JOptionPane.showInputDialog(parentFrame, "Enter a new name for the selected Hyperlink");
-				if (newName != null) {
-					parentLabel.updateName(currLink.getName(), newName);
-
-					frame.setTitle(newName);
-				}
-			}
-		});
 
 		update = new JButton("Update");
 		update.setHorizontalAlignment(SwingConstants.CENTER);
@@ -106,11 +94,7 @@ public class HyperlinkManager { // secondary window used to allow user to modify
 		c.gridx = 1;
 		frame.add(endFrame, c);
 
-		c.gridx = 0;
 		c.gridy = 2;
-		frame.add(changeName, c);
-
-		c.gridx = 1;
 		frame.add(update, c);
 
 		// frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -119,8 +103,12 @@ public class HyperlinkManager { // secondary window used to allow user to modify
 	}
 
 	public void updateManager(Hyperlink selectedLink) { // used to display the manager with a given hyperlink
-		currLink = selectedLink;
+		if (selectedLink == null && frame.isVisible()) {
+			frame.setVisible(false);
+			return;
+		}
 
+		currLink = selectedLink;
 		frame.setTitle(currLink.getName());
 
 		startFrame.setText(Integer.toString(currLink.getStart()));
