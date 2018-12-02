@@ -17,7 +17,8 @@ public class Player {
 
 	JFrame frame;
 	JLabel im1;
-    JLabel currentFrame1, currentFrame2;
+    JSlider slider1;
+    JLabel currentFrame1;
 
 	BufferedImage ogImg;
 	BufferedImage scaledImg;
@@ -89,6 +90,8 @@ public class Player {
 
         JButton load;
 
+        JFileChooser fc = new JFileChooser();
+
         //Makes file chooser select directories, delete if we want to select files
         fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fc.setAcceptAllFileFilterUsed(false);
@@ -106,7 +109,7 @@ public class Player {
             public void actionPerformed(ActionEvent e) {
 
                 
-                fc.setDialogTitle("Load Primary Video");
+                fc.setDialogTitle("Load Video");
                 int ret = fc.showOpenDialog(frame);
                 if (ret == JFileChooser.APPROVE_OPTION) {
                     primaryFile = fc.getSelectedFile();
@@ -137,16 +140,31 @@ public class Player {
                         System.out.println("Class Not Found Exception, links may not have loaded");
                     }
                 }
+                showIms(primaryFile, 1, im1, currentFrame1);
+            	slider1.setEnabled(true);
 
             }
         });
 
 
 
-        im1 = new JLabel("Secondary Video", SwingConstants.CENTER);
+        im1 = new JLabel("Load Video", SwingConstants.CENTER);
         im1.setMinimumSize(new Dimension(352, 288));
         im1.setPreferredSize(new Dimension(352, 288));
 
+        slider1 = new JSlider(JSlider.HORIZONTAL, 1, 9000, 1);
+        slider1.addChangeListener(new ChangeListener() {
+
+            public void stateChanged(ChangeEvent e) {
+
+                int num = ((JSlider)e.getSource()).getValue();
+            }
+        });
+        slider1.setEnabled(false);
+
+        currentFrame1 = new JLabel();
+        currentFrame1.setText(Integer.toString(slider1.getValue()));
+        currentFrame1.setHorizontalAlignment(SwingConstants.CENTER);
 
 		GridBagConstraints c = new GridBagConstraints();
 
@@ -164,6 +182,18 @@ public class Player {
         c.gridy = 1;
         c.gridx = 0;
         frame.add(im1, c);
+
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.insets = new Insets(0, 5, 0, 5);
+        c.gridheight = 1;
+        c.gridx = 0;
+        c.gridy = 3;
+        frame.add(slider1, c);
+
+        c.insets = new Insets(0,0,10,0);
+        c.gridx = 0;
+        c.gridy = 4;
+        frame.add(currentFrame1, c);
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.pack();
