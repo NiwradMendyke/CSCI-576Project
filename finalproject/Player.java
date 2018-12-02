@@ -28,6 +28,8 @@ public class Player {
 	int width = 352;
 	int height = 288;
 
+    boolean playing = false;
+
 
 
 
@@ -85,6 +87,25 @@ public class Player {
 		}
 	}
 
+    public void playVideo() {
+        slider1.setValue(slider1.getValue()+1);
+        currentFrame1.setText(Integer.toString(slider1.getValue()));
+        showIms(primaryFile, slider1.getValue(), im1, currentFrame1);
+
+        java.util.Timer t = new java.util.Timer();
+        if (playing && slider1.getValue() != 9000) {
+            t.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    playVideo();
+                }
+            }, 33);
+        }
+    }
+
+            
+        
+
 
 	public void createGUI() {
 
@@ -141,6 +162,8 @@ public class Player {
                     }
                 }
                 showIms(primaryFile, 1, im1, currentFrame1);
+                playing = true;
+                playVideo();
             	slider1.setEnabled(true);
 
             }
