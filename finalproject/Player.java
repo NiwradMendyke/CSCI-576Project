@@ -195,6 +195,60 @@ public class Player {
         im1 = new ClickableLabel(frame, links, "Load Video", SwingConstants.CENTER);
         im1.setMinimumSize(new Dimension(352, 288));
         im1.setPreferredSize(new Dimension(352, 288));
+        im1.addMouseListener(new MouseAdapter() {
+            @SuppressWarnings("unchecked")
+            public void mousePressed(MouseEvent e) {
+                String linkName = null;
+                for (Map.Entry<Rectangle, String> entry : im1.currRects.entrySet()) {
+                    if (entry.getKey().contains(e.getPoint())) {
+                        linkName = entry.getValue();
+                    }
+                }
+                if (linkName != null) {
+                    playing = false;
+                    Hyperlink clickedLink = links.get(linkName);
+                    File newVideoFile = clickedLink.linkedVideo.getKey();  
+                    int newVideoFrame = clickedLink.linkedVideo.getValue();
+                    File linkData = new File(newVideoFile, "hyperlinks");
+                    if (linkData.exists()) {
+                        try {
+                            
+                            FileInputStream fileStream = new FileInputStream(linkData);
+                            ObjectInputStream linkStream = new ObjectInputStream(fileStream);
+
+                            links = (HashMap<String, Hyperlink>)linkStream.readObject();
+
+                            linkStream.close();
+                            fileStream.close();
+
+                            im1.links = links;
+                            im1.updateFrame();
+
+                            System.out.println("Hyperlinks have been loaded");
+                        }
+
+                        catch (IOException exception) {
+                            System.out.println("IOException, links may not have loaded");
+                        }
+                        catch (ClassNotFoundException exception) {
+                            System.out.println("Class Not Found Exception, links may not have loaded");
+                        }
+                    }
+                    else {
+                        links.clear();
+                        System.out.println("No hyperlink data exists, starting fresh.");
+                    }
+                    primaryFile = newVideoFile;
+                    slider1.setValue(newVideoFrame);
+                    im1.links.clear();
+                    im1.updateFrame();
+                    showIms(primaryFile, slider1.getValue(), im1, currentFrame1);
+                    playing = true;
+                    playVideo();
+                }
+            }
+        });
+            
 
         slider1 = new JSlider(JSlider.HORIZONTAL, 1, 9000, 1);
         slider1.addChangeListener(new ChangeListener() {
