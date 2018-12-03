@@ -20,6 +20,8 @@ public class Player {
     JSlider slider1;
     JLabel currentFrame1;
 
+    Stack<Pair<File, Integer>> videoStack;
+
 	BufferedImage ogImg;
 	BufferedImage scaledImg;
 
@@ -110,7 +112,8 @@ public class Player {
 
 	public void createGUI() {
 
-        JButton load, pause;
+        videoStack = new Stack<Pair<File, Integer>>();
+        JButton load, pause, back;
 
         JFileChooser fc = new JFileChooser();
 
@@ -125,7 +128,7 @@ public class Player {
 
         //Loading Buttons
         load = new JButton("Load");
-        load.setHorizontalAlignment(SwingConstants.CENTER);
+        load.setHorizontalAlignment(SwingConstants.RIGHT);
         load.addActionListener(new ActionListener() {
             @SuppressWarnings("unchecked")
             public void actionPerformed(ActionEvent e) {
@@ -165,12 +168,64 @@ public class Player {
                         System.out.println("Class Not Found Exception, links may not have loaded");
                     }
                 }
+                slider1.setValue(1);
                 showIms(primaryFile, 1, im1, currentFrame1);
                 playing = true;
                 playVideo();
 
             }
         });
+
+        back = new JButton("<--");
+        back.setHorizontalAlignment(SwingConstants.LEFT);
+        back.addActionListener(new ActionListener() {
+            @SuppressWarnings("unchecked")
+            public void actionPerformed(ActionEvent e) {
+
+                if (!videoStack.empty()) {
+                    playing = false;
+                    Pair<File, Integer> tmp = videoStack.pop();
+                    primaryFile = tmp.getKey();
+                    slider1.setValue(tmp.getValue());
+                 
+                    File linkData = new File(primaryFile, "hyperlinks");
+                    if (linkData.exists()) {
+                        try {
+                            
+                            FileInputStream fileStream = new FileInputStream(linkData);
+                            ObjectInputStream linkStream = new ObjectInputStream(fileStream);
+
+                            links = (HashMap<String, Hyperlink>)linkStream.readObject();
+
+                            linkStream.close();
+                            fileStream.close();
+
+                            im1.links = links;
+                            im1.updateFrame();
+
+                            System.out.println("Hyperlinks have been loaded");
+                        }
+
+                        catch (IOException exception) {
+                            System.out.println("IOException, links may not have loaded");
+                        }
+                        catch (ClassNotFoundException exception) {
+                            System.out.println("Class Not Found Exception, links may not have loaded");
+                        }
+                    }
+                    else {
+                        links.clear();
+                        System.out.println("No hyperlink data exists, starting fresh.");
+                    }
+
+                    im1.updateFrame();
+                    showIms(primaryFile, slider1.getValue(), im1, currentFrame1);
+                    playing = true;
+                    playVideo();
+                }
+            }
+        });
+
 
         pause = new JButton("Pause");
         pause.setHorizontalAlignment(SwingConstants.CENTER);
@@ -205,6 +260,7 @@ public class Player {
                     }
                 }
                 if (linkName != null) {
+                    videoStack.push(new Pair<File, Integer> (primaryFile, slider1.getValue()));
                     playing = false;
                     Hyperlink clickedLink = links.get(linkName);
                     File newVideoFile = clickedLink.linkedVideo.getKey();  
@@ -274,7 +330,11 @@ public class Player {
         c.weighty = 1;
 		c.gridx = 0;
         c.gridy = 0;
+        frame.add(back, c);
+
+        c.gridx = 1;
 		frame.add(load, c);
+
 
         //Add Image containers
         c.gridheight = 2;
