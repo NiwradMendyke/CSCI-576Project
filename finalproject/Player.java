@@ -27,6 +27,9 @@ public class Player {
 
 	File primaryFile;
 
+    Audio audioPlayer;
+    Scanner scanner;
+
 	int width = 352;
 	int height = 288;
 
@@ -94,7 +97,9 @@ public class Player {
         currentFrame1.setText(Integer.toString(slider1.getValue()));
         showIms(primaryFile, slider1.getValue(), im1, currentFrame1);
         im1.updateFrame(slider1.getValue());
-
+        if (slider1.getValue() % 120 == 0) {
+            audioPlayer.jump(slider1.getValue() * 33333);
+        }
         java.util.Timer t = new java.util.Timer();
         if (playing && slider1.getValue() != 9000) {
             t.schedule(new TimerTask() {
@@ -102,7 +107,7 @@ public class Player {
                 public void run() {
                     playVideo();
                 }
-            }, 33);
+            }, 21);
         }
     }
 
@@ -168,10 +173,19 @@ public class Player {
                         System.out.println("Class Not Found Exception, links may not have loaded");
                     }
                 }
+                try {
+                audioPlayer = new Audio(new File(primaryFile, primaryFile.getName() + ".wav"));
+                }
+                catch (Exception ex) {
+                    System.out.println("Error with playing sound");
+                    ex.printStackTrace();
+                }
+                scanner = new Scanner(System.in);
                 slider1.setValue(1);
                 showIms(primaryFile, 1, im1, currentFrame1);
                 playing = true;
                 playVideo();
+                audioPlayer.play();
 
             }
         });
