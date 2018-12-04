@@ -102,11 +102,11 @@ public class ClickableLabel extends JLabel implements MouseListener, MouseMotion
 
  			if (newLink != null && name.equals(newLink.getName())) {
                 Color tmp = newLink.getColor();
- 				g.setColor(new Color(tmp.getRed(), tmp.getGreen(), tmp.getBlue(), 25));
+ 				g.setColor(new Color(tmp.getRed(), tmp.getGreen(), tmp.getBlue(), 50));
  			}
  			else {
                 Color tmp = links.get(name).getColor();
- 				g.setColor(new Color(tmp.getRed(), tmp.getGreen(), tmp.getBlue(), 25));
+ 				g.setColor(new Color(tmp.getRed(), tmp.getGreen(), tmp.getBlue(), 50));
  			}
 
  			g.fillRect((int)r.getX(), (int)r.getY(), (int)r.getWidth(), (int)r.getHeight());

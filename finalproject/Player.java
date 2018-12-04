@@ -294,6 +294,8 @@ public class Player {
                     File newVideoFile = clickedLink.linkedVideo.getKey();  
                     int newVideoFrame = clickedLink.linkedVideo.getValue();
                     File linkData = new File(newVideoFile, "hyperlinks");
+                    im1.links.clear();
+                    System.out.println(linkData);
                     if (linkData.exists()) {
                         try {
                             
@@ -324,7 +326,6 @@ public class Player {
                     }
                     primaryFile = newVideoFile;
                     slider1.setValue(newVideoFrame);
-                    im1.links.clear();
                     audioPlayer.stop();
                     try {
                         audioPlayer.resetAudioStream(new File(primaryFile, primaryFile.getName() + ".wav"));
@@ -336,6 +337,7 @@ public class Player {
                     }
                     im1.updateFrame();
                     showIms(primaryFile, slider1.getValue(), im1, currentFrame1);
+                    slider1.setEnabled(false);
                     playing = true;
                     pause.setText("Pause");
                     playVideo();
