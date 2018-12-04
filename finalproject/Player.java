@@ -119,6 +119,9 @@ public class Player {
 
         videoStack = new Stack<Pair<File, Integer>>();
         JButton load, pause, back;
+        load = new JButton("Load");
+        pause = new JButton("Pause");
+        back = new JButton("<--");
 
         JFileChooser fc = new JFileChooser();
 
@@ -132,7 +135,6 @@ public class Player {
 		frame.getContentPane().setLayout(gLayout);
 
         //Loading Buttons
-        load = new JButton("Load");
         load.setHorizontalAlignment(SwingConstants.RIGHT);
         load.addActionListener(new ActionListener() {
             @SuppressWarnings("unchecked")
@@ -184,13 +186,13 @@ public class Player {
                 slider1.setValue(1);
                 showIms(primaryFile, 1, im1, currentFrame1);
                 playing = true;
+                pause.setText("Pause");
                 playVideo();
                 audioPlayer.play();
 
             }
         });
 
-        back = new JButton("<--");
         back.setHorizontalAlignment(SwingConstants.LEFT);
         back.addActionListener(new ActionListener() {
             @SuppressWarnings("unchecked")
@@ -232,28 +234,40 @@ public class Player {
                         System.out.println("No hyperlink data exists, starting fresh.");
                     }
 
+                    audioPlayer.stop();
+                    try {
+                        audioPlayer.resetAudioStream(new File(primaryFile, primaryFile.getName() + ".wav"));
+                        audioPlayer.play();
+                        audioPlayer.jump(slider1.getValue() * 33333);
+                    }
+                    catch (Exception ex) {
+                        System.out.println("Audio issue");
+                    }
                     im1.updateFrame();
                     showIms(primaryFile, slider1.getValue(), im1, currentFrame1);
                     playing = true;
+                    pause.setText("Pause");
                     playVideo();
                 }
             }
         });
 
 
-        pause = new JButton("Pause");
         pause.setHorizontalAlignment(SwingConstants.CENTER);
         pause.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (pause.getText() == "Pause") {
                     pause.setText("Play");
                     playing = false;
+                    audioPlayer.pause();
                     slider1.setEnabled(true);
                 }
                 else if (pause.getText() == "Play") {
                     pause.setText("Pause");
                     playing = true;
                     slider1.setEnabled(false);
+                    audioPlayer.jump(slider1.getValue() * 33333);
+                    audioPlayer.play();
                     playVideo();
                 }
             }
@@ -311,9 +325,19 @@ public class Player {
                     primaryFile = newVideoFile;
                     slider1.setValue(newVideoFrame);
                     im1.links.clear();
+                    audioPlayer.stop();
+                    try {
+                        audioPlayer.resetAudioStream(new File(primaryFile, primaryFile.getName() + ".wav"));
+                        audioPlayer.play();
+                        audioPlayer.jump(slider1.getValue() * 33333);
+                    }
+                    catch (Exception ex) {
+                        System.out.println("Audio issue");
+                    }
                     im1.updateFrame();
                     showIms(primaryFile, slider1.getValue(), im1, currentFrame1);
                     playing = true;
+                    pause.setText("Pause");
                     playVideo();
                 }
             }
