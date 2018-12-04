@@ -26,7 +26,6 @@ public class Audio {
         clip = AudioSystem.getClip(null);
 
         clip.open(audioInputStream);
-        clip.loop(Clip.LOOP_CONTINUOUSLY); //Not sure if I need this
 
     }
 
@@ -78,7 +77,6 @@ public class Audio {
         audioInputStream = AudioSystem.getAudioInputStream(file);
         clip = AudioSystem.getClip(null);
         clip.open(audioInputStream); 
-        clip.loop(Clip.LOOP_CONTINUOUSLY); 
     }
 
 }
