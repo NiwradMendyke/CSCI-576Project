@@ -136,45 +136,50 @@ public class Editor {
                 int ret = fc.showOpenDialog(frame);
                 if (ret == JFileChooser.APPROVE_OPTION) {
                     primaryFile = fc.getSelectedFile();
+                    links.clear();
+                    im1.links = links;
+                    im1.updateFrame();
+                    linkListModel.removeAllElements();
+                    File linkData = new File(primaryFile, "hyperlinks");
+                    if (linkData.exists()) {
+                        try {
+                            
+                            FileInputStream fileStream = new FileInputStream(linkData);
+                            ObjectInputStream linkStream = new ObjectInputStream(fileStream);
+
+                            links = (HashMap<String, Hyperlink>)linkStream.readObject();
+
+                            linkStream.close();
+                            fileStream.close();
+
+                            for (String linkName : links.keySet()) {
+                                linkListModel.addElement(linkName);
+                            }
+                            im1.links = links;
+                            im1.updateFrame();
+                            colorIndex = (links.size() + 1) % colors.length;
+
+                            System.out.println("Hyperlinks have been loaded");
+                        }
+
+                        catch (IOException exception) {
+                            System.out.println("IOException, links may not have loaded");
+                        }
+                        catch (ClassNotFoundException exception) {
+                            System.out.println("Class Not Found Exception, links may not have loaded");
+                        }
+                    }
+                    // primaryFile = new File("../London/LondonOne");
+
+
+                    slider1.setValue(1);
+                    showIms(primaryFile, 1, im1, currentFrame1, slider1);
                 }
                 if (primaryFile == null) {
                     return;
                 }
                  
 
-                File linkData = new File(primaryFile, "hyperlinks");
-                if (linkData.exists()) {
-                    try {
-                        
-                        FileInputStream fileStream = new FileInputStream(linkData);
-                        ObjectInputStream linkStream = new ObjectInputStream(fileStream);
-
-                        links = (HashMap<String, Hyperlink>)linkStream.readObject();
-
-                        linkStream.close();
-                        fileStream.close();
-
-                        for (String linkName : links.keySet()) {
-                            linkListModel.addElement(linkName);
-                        }
-                        im1.links = links;
-                        im1.updateFrame();
-                        colorIndex = (links.size() + 1) % colors.length;
-
-                        System.out.println("Hyperlinks have been loaded");
-                    }
-
-                    catch (IOException exception) {
-                        System.out.println("IOException, links may not have loaded");
-                    }
-                    catch (ClassNotFoundException exception) {
-                        System.out.println("Class Not Found Exception, links may not have loaded");
-                    }
-                }
-                // primaryFile = new File("../London/LondonOne");
-
-
-            	showIms(primaryFile, 1, im1, currentFrame1, slider1);
             }
         });
 
@@ -183,18 +188,18 @@ public class Editor {
         loadTwo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
 
-                // fc.setDialogTitle("Load Secondary Video");
-                // int ret = fc.showOpenDialog(frame);
-                // if (ret == JFileChooser.APPROVE_OPTION) {
-                //     secondaryFile = fc.getSelectedFile();
-                // }
-                // if (secondaryFile == null) {
-                //     return;
-                // }
+                fc.setDialogTitle("Load Secondary Video");
+                int ret = fc.showOpenDialog(frame);
+                if (ret == JFileChooser.APPROVE_OPTION) {
+                    secondaryFile = fc.getSelectedFile();
+                    slider2.setValue(1);
+                    showIms(secondaryFile, 1, im2, currentFrame2, slider2);
+                }
+                if (secondaryFile == null) {
+                    return;
+                }
 
-                secondaryFile = new File("../London/LondonTwo");
 
-            	showIms(secondaryFile, 1, im2, currentFrame2, slider2);
             }
         });
 
