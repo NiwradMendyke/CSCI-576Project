@@ -259,6 +259,7 @@ public class Player {
                 if (im1.getIcon() == null) {
                     return;
                 }
+                
                 if (pause.getText() == "Pause") {
                     pause.setText("Play");
                     playing = false;

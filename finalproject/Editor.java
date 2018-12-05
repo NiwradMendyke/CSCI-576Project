@@ -310,7 +310,11 @@ public class Editor {
             String newLinkName = JOptionPane.showInputDialog(frame, "Please enter a name for the new link");
             if (newLinkName == null) {
                 return;
-            }          
+            }
+            if (links.get(newLinkName) != null) {
+                JOptionPane.showMessageDialog(frame, "You already have a link with that name");
+                return;
+            }  
 
             im1.createNewLink(newLinkName, colors[colorIndex]);
             colorIndex = (colorIndex + 1) % colors.length;
