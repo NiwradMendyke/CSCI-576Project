@@ -19,15 +19,9 @@ public class ClickableLabel extends JLabel implements MouseListener, MouseMotion
 
 	Rectangle rect; 
 
-	Point mouseClick; // tracks point for translating box
-	String selectedCorner = ""; // tracks corner for dragging box corners
-
-	int drawMode = 0; // represents which state the drawable label is in
-	// 0 is no drawing, 1 is draw start frame, 2 is draw end frame, 3 is modify link box
+	Point lastMouse;
 
 	JFrame parentFrame;
-	JLabel helpText;
-	JList<String> linkList;
 
 
 	public ClickableLabel(JFrame parent, HashMap<String, Hyperlink> hyperlinks, String name, int orientation) {
@@ -49,29 +43,20 @@ public class ClickableLabel extends JLabel implements MouseListener, MouseMotion
 
 		links.forEach((name, link) -> link.getFrames(currFrame, currRects));
 
-		if (drawMode == 2) {
-			newLink.getFrames(currFrame, currRects);
-		}
-		if (drawMode == 0 && currRects.size() > 0) {
-			drawMode = 3;
-		}
-		if (drawMode == 3 && currRects.size() == 0) {
-			drawMode = 0;
-		}
+		rect = null;
+
+		currRects.forEach((r, name) -> {
+			if (r.contains(lastMouse)) {
+				rect = r;
+				return;
+			}
+		});
 	}
 
 	public void updateFrame(int newFrame) { // called by Editor to update current frame number and the rects in the current frame
 		currFrame = newFrame;
 		updateFrame();
 	}
-
-	public void updateFrame(int newFrame, String currentLink) { // called by Editor to update current frame number, rects, and the current hyperlink
-		currFrame = newFrame;
-		currLink = currentLink;
-		// hyperlinkManager.updateManager(links.get(currLink));
-		updateFrame();
-	}
-
 
 
 	public void mouseClicked(MouseEvent e) { }
@@ -80,7 +65,20 @@ public class ClickableLabel extends JLabel implements MouseListener, MouseMotion
 	public void mousePressed(MouseEvent e) {}
     public void mouseReleased (MouseEvent e) {}
 	public void mouseDragged(MouseEvent e) {}
-	public void mouseMoved(MouseEvent e) { }
+
+	public void mouseMoved(MouseEvent e) { 
+		lastMouse = e.getPoint();
+		if (rect == null || rect.contains(lastMouse)) {
+			rect = null;
+
+			currRects.forEach((r, name) -> {
+				if (r.contains(lastMouse)) {
+					rect = r;
+					return;
+				}
+			});
+		}
+	}
 
 
 	@Override
@@ -88,28 +86,16 @@ public class ClickableLabel extends JLabel implements MouseListener, MouseMotion
     	super.paintComponent(g);
     	Graphics2D g2 = (Graphics2D) g;
     
-    	if (rect != null) {
-    		currRects.put(rect, currLink);
-    	}
+    	currRects.forEach((r, name) -> {
+ 			Color tmp = links.get(name).getColor();
 
- 		currRects.forEach((r, name) -> {
- 			if (name.equals(currLink)) {
- 				g2.setStroke(new BasicStroke(3));
- 			}
- 			else {
- 				g2.setStroke(new BasicStroke(1));
- 			}
-
- 			if (newLink != null && name.equals(newLink.getName())) {
-                Color tmp = newLink.getColor();
- 				g.setColor(new Color(tmp.getRed(), tmp.getGreen(), tmp.getBlue(), 50));
- 			}
- 			else {
-                Color tmp = links.get(name).getColor();
- 				g.setColor(new Color(tmp.getRed(), tmp.getGreen(), tmp.getBlue(), 50));
- 			}
-
+			g.setColor(new Color(tmp.getRed(), tmp.getGreen(), tmp.getBlue(), 40));
  			g.fillRect((int)r.getX(), (int)r.getY(), (int)r.getWidth(), (int)r.getHeight());
+
+ 			if (rect != null && r.equals(rect)) {
+ 				g.setColor(tmp);
+ 				g.drawRect((int)r.getX(), (int)r.getY(), (int)r.getWidth(), (int)r.getHeight());
+ 			}
  		});
    }
 }

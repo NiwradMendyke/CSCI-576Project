@@ -256,6 +256,9 @@ public class Player {
         pause.setHorizontalAlignment(SwingConstants.CENTER);
         pause.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                if (im1.getIcon() == null) {
+                    return;
+                }
                 if (pause.getText() == "Pause") {
                     pause.setText("Play");
                     playing = false;
